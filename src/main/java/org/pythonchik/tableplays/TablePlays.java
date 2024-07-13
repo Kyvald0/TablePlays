@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public final class TablePlays extends JavaPlugin implements Listener, CommandExecutor {
+public final class TablePlays extends JavaPlugin implements Listener{ //, CommandExecutor
     /**
      * tag -   tableplays:titem   - bool, every item should have this, a proof that this is a plugin item
      */
@@ -108,9 +108,9 @@ public final class TablePlays extends JavaPlugin implements Listener, CommandExe
     public void onEnable() {
         Bukkit.getServer().getPluginManager().registerEvents(this,this);
         RecipeManager.init(this);
-        this.getCommand("gimme").setExecutor(this);
-        this.getCommand("bundle").setExecutor(this);
-        this.getCommand("base64").setExecutor(this);
+        //this.getCommand("gimme").setExecutor(this);
+        //this.getCommand("bundle").setExecutor(this);
+        //this.getCommand("base64").setExecutor(this);
     }
 
     @Override
@@ -384,18 +384,18 @@ public final class TablePlays extends JavaPlugin implements Listener, CommandExe
 
 
 
-                        System.out.println(NNcarpetL.serialize()); //TODO prints
+                        //System.out.println(NNcarpetL.serialize()); //TODO prints
 
                         Interaction interaction = player.getLocation().getWorld().spawn(NNcarpetL.clone(), Interaction.class);
 
-                        System.out.println(interaction.getUniqueId()); //TODO prints
+                        //System.out.println(interaction.getUniqueId()); //TODO prints
 
                         //item setup
                         ItemDisplay display = player.getLocation().getWorld().spawn(NNcarpetL.clone(), ItemDisplay.class);
                         display.setItemStack(handstack);
                         player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
 
-                        System.out.println(display.getUniqueId()); //TODO prints
+                        //System.out.println(display.getUniqueId()); //TODO prints
 
                         for (int x = 0;x<10;x++){
                             for (int y = 0; y<10;y++) {
@@ -703,7 +703,7 @@ public final class TablePlays extends JavaPlugin implements Listener, CommandExe
         // If no 2x2 area of carpets is found, return null
         return null;
     }
-
+/*
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
@@ -748,7 +748,7 @@ public final class TablePlays extends JavaPlugin implements Listener, CommandExe
                 Player player = (Player) sender;
                 ItemStack stack = player.getInventory().getItemInMainHand();
                 String items = convertItemsToBase64(new ArrayList<>(List.of(stack)));
-                System.out.println(items);
+
                 player.getInventory().addItem(getItemsFromBase64(items).getFirst());
             } else {
                 Player player = (Player) sender;
@@ -767,13 +767,11 @@ public final class TablePlays extends JavaPlugin implements Listener, CommandExe
                 }
                 stack.setItemMeta(meta);
                 player.getInventory().addItem(stack);
-                /*
-
-                 */
             }
         }
         return true;
     }
+    */
 
     public static void roundEntityYaw(Entity entity) {
         float yaw = entity.getLocation().getYaw();
