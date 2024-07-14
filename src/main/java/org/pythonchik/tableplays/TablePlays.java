@@ -3,9 +3,6 @@ package org.pythonchik.tableplays;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,7 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public final class TablePlays extends JavaPlugin implements Listener{ //, CommandExecutor
+public final class TablePlays extends JavaPlugin implements Listener { //, CommandExecutor
     /**
      * tag -   tableplays:titem   - bool, every item should have this, a proof that this is a plugin item
      */
@@ -95,14 +92,23 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
      * tag -   tableplays:tbmicount   - int, maximum abount of items inside a bundle
      */
     NamespacedKey BIMcount = new NamespacedKey(this,"TBMIcount");
-    /**
-     * tag -   tableplays:tdice   - bool, if item is a dice
-     */
-    NamespacedKey dice = new NamespacedKey(this,"Tdice");
+    ///**
+    // * tag -   tableplays:tdice   - bool, if item is a dice
+    // */
+    //NamespacedKey dice = new NamespacedKey(this,"Tdice");
     /**
      * tag -   tableplays:tchessp   - bool, if this is a chess piece
      */
     NamespacedKey chessp = new NamespacedKey(this,"TchessP");
+    /**
+     * tag -   tableplays:tdomino   - bool, if this is a domino
+     */
+    NamespacedKey domino = new NamespacedKey(this,"Tdomino");
+    /**
+     * tag -   tableplays:tdonimob   - bool, if this is a bundle for dominoes
+     */
+    NamespacedKey dominoB = new NamespacedKey(this,"TdominoB");
+
 
     @Override
     public void onEnable() {
@@ -182,7 +188,7 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
                         }
                         display.setItemStack(handstack);
                         player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                        display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(1, 1, 1), new AxisAngle4f(45, 0, 0, 0)));
+                        display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(1, 1, 1), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
 
                         Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
                         interaction.addPassenger(display);
@@ -296,7 +302,7 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
                         ItemDisplay display = player.getLocation().getWorld().spawn(display_location, ItemDisplay.class);
                         display.setItemStack(handstack);
                         player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                        display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.6f, 0.6f, 0.6f), new AxisAngle4f(45, 0, 0, 0)));
+                        display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.6f, 0.6f, 0.6f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
 
                         Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
                         interaction.addPassenger(display);
@@ -311,6 +317,7 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
 
                 }
             }
+
             /*
             else if (handstack.getItemMeta().getPersistentDataContainer().has(dice)) {
                 Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
@@ -363,7 +370,7 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
                     System.out.println(interaction.getUniqueId()); //TODO prints
                     System.out.println(display.getUniqueId());
 
-                    display.setTransformation(new Transformation(new Vector3f(0, 0.15f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), new AxisAngle4f(45, 0, 0, 0)));
+                    display.setTransformation(new Transformation(new Vector3f(0, 0.15f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
                     interaction.setInteractionHeight(0.3f);
                     interaction.setInteractionWidth(0.3f);
                     interaction.addPassenger(display);
@@ -371,7 +378,7 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
 
                 }
             }
-            */
+            */ //dice
             else if (handmeta.getPersistentDataContainer().has(board)) {
                 Block block1 = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
                 if (block1 != null) {
@@ -471,6 +478,130 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
                 offstack.setItemMeta(offmeta);
 
             }
+
+            if (handmeta.getPersistentDataContainer().has(domino)) { // we are holding domino
+                if (offstack.getType().equals(Material.AIR) || offmeta == null
+                        || !offmeta.getPersistentDataContainer().has(bundle)
+                        || !offmeta.getPersistentDataContainer().has(BIMcount)
+                        || !offmeta.getPersistentDataContainer().has(dominoB)
+                        || !offmeta.getPersistentDataContainer().has(BIcount)
+                        || offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) <= offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
+                    //in the second hand we are NOT holding a correct bundle
+                    Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block != null) {
+                        Vector direction = player.getEyeLocation().getDirection();
+                        Location eyeloc = player.getEyeLocation();
+                        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
+                            eyeloc.add(direction.clone().multiply(0.002));
+                            if (eyeloc.getBlock().getType() != Material.AIR) {break;}
+                            Location highes = null;
+                            boolean bbase = false;
+                            for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
+                                if (entity instanceof Interaction) {
+                                    if (highes == null) {
+                                        highes = entity.getLocation();
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                    if (highes.getY() < entity.getLocation().getY()) {
+                                        highes = entity.getLocation();
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                }
+                            }
+                            if (highes != null) {
+                                if (bbase) {
+                                    eyeloc.setX(highes.getX());
+                                    eyeloc.setZ(highes.getZ());
+                                }
+                                eyeloc.setY(highes.getY() + 0.002);
+                                break;
+                            }
+                        } //getting eyeloc as pos where you want to place card
+                        eyeloc.setY(eyeloc.getY() + 0.005); //moving eyeloc up a bit, to not clip into anything
+                        eyeloc = moveToGridCenter(eyeloc);
+                        Location display_location = player.getLocation();
+                        display_location.setPitch(0);
+                        display_location.setYaw((Math.round(display_location.getYaw()/90)%4)*90);
+                        ItemDisplay display = player.getLocation().getWorld().spawn(display_location, ItemDisplay.class);
+                        if (handmeta.getPersistentDataContainer().has(hcard)) {
+                            handmeta.setCustomModelData(handmeta.getPersistentDataContainer().get(hcard, PersistentDataType.INTEGER));
+                            handmeta.getPersistentDataContainer().remove(hcard);
+                            handstack.setItemMeta(handmeta);
+                        }
+                        display.setItemStack(handstack);
+                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
+
+                        Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
+                        interaction.addPassenger(display);
+                        interaction.setInteractionHeight(0.001f);
+                        interaction.setInteractionWidth(0.15f);
+                        interaction.setRotation(display_location.getYaw(), 0);
+                        player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+
+                    }
+                }
+                else if (offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
+                        && offmeta.getPersistentDataContainer().has(bundle)
+                        && offmeta.getPersistentDataContainer().has(dominoB)
+                        && offmeta.getPersistentDataContainer().has(Bitems)
+                        && offmeta.getPersistentDataContainer().has(BIMcount)
+                        && offmeta.getPersistentDataContainer().has(BIcount)
+                        && offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
+                    // main hand - card
+                    // offhand good bundle to place card in
+                    String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
+                    ArrayList<ItemStack> items = getItemsFromBase64(sitems);
+                    items.add(handstack);
+                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                    String sitem = convertItemsToBase64(items);
+                    offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
+                    offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
+                    List<String> lore = offmeta.getLore();
+                    if (lore == null) {
+                        lore = new ArrayList<>();
+                        lore.add("§r§7Выдает одну случайную домино");
+                        lore.add("§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
+                    } else {
+                        lore.set(1, "§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                    }
+                    offmeta.setLore(lore);
+                    offstack.setItemMeta(offmeta);
+                } // domino in main, good bundle in off, placing domino in bundle
+                /*
+                else if (offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
+                        && handmeta.getPersistentDataContainer().has(ucard)
+                        && offmeta.getPersistentDataContainer().has(bundle)
+                        && offmeta.getPersistentDataContainer().has(Ubundle)
+                        && offmeta.getPersistentDataContainer().has(Bitems)
+                        && offmeta.getPersistentDataContainer().has(BIMcount)
+                        && offmeta.getPersistentDataContainer().has(BIcount)
+                        && offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
+                    String sitems = offmeta.getPersistentDataContainer().get(Bitems, PersistentDataType.STRING);
+                    ArrayList<ItemStack> items = getItemsFromBase64(sitems);
+                    items.add(handstack);
+                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                    String sitem = convertItemsToBase64(items);
+                    offmeta.getPersistentDataContainer().set(Bitems, PersistentDataType.STRING, sitem);
+                    offmeta.getPersistentDataContainer().set(BIcount, PersistentDataType.INTEGER, offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER) + 1);
+                    List<String> lore = offmeta.getLore();
+                    if (lore == null) {
+                        lore = new ArrayList<>();
+                        lore.add("§r§7При использовании выдает случайную карту игры UNO");
+                        lore.add("§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                    } else {
+                        lore.set(1, "§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                    }
+                    offmeta.setLore(lore);
+                    offstack.setItemMeta(offmeta);
+
+                }
+
+                 */
+            }
+
         }
     }
 
@@ -529,7 +660,8 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
                 }
                 //onItemUse(new PlayerStatisticIncrementEvent(event.getPlayer(),Statistic.USE_ITEM,event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK),event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK)+1,Material.WARPED_FUNGUS_ON_A_STICK));
                 return;
-            } else if (event.getRightClicked().getPersistentDataContainer().has(base) && event.getRightClicked().getPersistentDataContainer().has(square) && !event.getRightClicked().getPassengers().isEmpty()) {
+            }
+            else if (event.getRightClicked().getPersistentDataContainer().has(base) && event.getRightClicked().getPersistentDataContainer().has(square) && !event.getRightClicked().getPassengers().isEmpty()) {
                 Interaction interaction2 = (Interaction) event.getRightClicked();
                 ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
                 event.getPlayer().getInventory().addItem(stack);
@@ -542,9 +674,10 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
             if (event.getPlayer().getInventory().getItemInOffHand().getItemMeta() != null
                     && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(bundle)
                     && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Bitems)
+                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Cbundle)
                     && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIcount)
                     && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIMcount)
-                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) < event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
+                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
                 Interaction interaction = (Interaction) event.getRightClicked();
                 ItemStack stack = ((ItemDisplay) interaction.getPassengers().getFirst()).getItemStack(); //display stack
                 ItemMeta offmeta = event.getPlayer().getInventory().getItemInOffHand().getItemMeta();
@@ -569,7 +702,39 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
                 return;
             }
 
-            //we are not holding correct bundle
+                if (event.getPlayer().getInventory().getItemInOffHand().getItemMeta() != null
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(bundle)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Bitems)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(dominoB)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIcount)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIMcount)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
+                    Interaction interaction = (Interaction) event.getRightClicked();
+                    ItemStack stack = ((ItemDisplay) interaction.getPassengers().getFirst()).getItemStack(); //display stack
+                    ItemMeta offmeta = event.getPlayer().getInventory().getItemInOffHand().getItemMeta();
+                    String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
+                    ArrayList<ItemStack> items = getItemsFromBase64(sitems);
+                    items.add(stack);
+                    interaction.getPassengers().getFirst().remove();
+                    interaction.remove();
+                    String sitem = convertItemsToBase64(items);
+                    offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
+                    offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
+                    List<String> lore = offmeta.getLore();
+                    if (lore == null) {
+                        lore = new ArrayList<>();
+                        lore.add("§r§7Выдает одну случайную домино");
+                        lore.add("§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
+                    } else {
+                        lore.set(1, "§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                    }
+                    offmeta.setLore(lore);
+                    event.getPlayer().getInventory().getItemInOffHand().setItemMeta(offmeta);
+                    return;
+                }
+
+
+                //we are not holding correct bundle
 
             if (event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
                     && event.getPlayer().getInventory().getItemInMainHand().getItemMeta() != null
@@ -584,16 +749,24 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
             if (event.getPlayer().isSneaking()) {
                 Interaction interaction = (Interaction) event.getRightClicked();
                 ItemDisplay display = ((ItemDisplay) interaction.getPassengers().getFirst());
-                if (display.getItemStack() != null && display.getItemStack().getItemMeta() != null && display.getItemStack().getItemMeta().getPersistentDataContainer().has(rotatable)) {
-                    Location loc = display.getLocation();
-                    loc.setPitch(loc.getPitch() == 0 ? 180 : 0);
-                    Transformation transformation = display.getTransformation();
-                    transformation.getTranslation().y = -transformation.getTranslation().y;
-                    display.setTransformation(transformation);
-                    display.teleport(loc);
-                    interaction.addPassenger(display);
-                    event.setCancelled(true);
-                    return;
+                if (display.getItemStack() != null && display.getItemStack().getItemMeta() != null) {
+                    if (display.getItemStack().getItemMeta().getPersistentDataContainer().has(rotatable) && !display.getItemStack().getItemMeta().getPersistentDataContainer().has(domino)) {
+                        Location loc = display.getLocation();
+                        loc.setPitch(loc.getPitch() == 0 ? 180 : 0);
+                        Transformation transformation = display.getTransformation();
+                        transformation.getTranslation().y = -transformation.getTranslation().y;
+                        display.setTransformation(transformation);
+                        display.teleport(loc);
+                        interaction.addPassenger(display);
+                        event.setCancelled(true);
+                        return;
+                    } else if (display.getItemStack().getItemMeta().getPersistentDataContainer().has(domino)) {
+                        Location loc = display.getLocation();
+                        loc.setYaw(loc.getYaw()+90);
+                        display.teleport(loc);
+                        interaction.addPassenger(display);
+                        return;
+                    }
                 }
             }
             Interaction interaction2 = (Interaction) event.getRightClicked();
@@ -662,6 +835,33 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
         }
     }
 
+    public Location moveToGridCenter(Location location) {
+        // Size of each cell in the grid
+        double cellSize = 0.025;
+
+        // Get the coordinates within the block (0.0 to 1.0)
+        double localX = location.getX() - location.getBlockX();
+        double localZ = location.getZ() - location.getBlockZ();
+
+        // Determine the cell indices within the 10x10 grid
+        int cellX = (int) (localX / cellSize);
+        int cellZ = (int) (localZ / cellSize);
+
+        // Calculate the center of the cell
+        double centerX = cellX * cellSize + (cellSize / 2.0);
+        double centerZ = cellZ * cellSize + (cellSize / 2.0);
+
+        // Create a new location at the center of the cell
+        Location centerLocation = new Location(
+                location.getWorld(),
+                location.getBlockX() + centerX,
+                location.getY(),
+                location.getBlockZ() + centerZ
+        );
+
+        return centerLocation;
+    }
+
     public static Location getMostBottomLeftCarpet(Block targetBlock) {
 
         if (targetBlock == null || targetBlock.getType() == Material.AIR) {
@@ -703,7 +903,8 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
         // If no 2x2 area of carpets is found, return null
         return null;
     }
-/*
+
+    /*
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
@@ -711,44 +912,27 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
                 Player player = (Player) sender;
 
 
-                for (int y = 0; y < 12; y++) {
+                for (int y = 0; y < 28; y++) {
                     ItemStack stack = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
                     ItemMeta meta = stack.getItemMeta();
                     if (meta != null) {
                         meta.getPersistentDataContainer().set(item, PersistentDataType.BOOLEAN, true);
-                        meta.getPersistentDataContainer().set(chessp, PersistentDataType.BOOLEAN, true);
-                        meta.setCustomModelData(33210+y);
-                        meta.setDisplayName("§rШахматная фигура");
+                        meta.getPersistentDataContainer().set(domino, PersistentDataType.BOOLEAN, true);
+                        meta.setCustomModelData(33300+y);
+                        meta.setDisplayName("§rДомино");
                     }
                     stack.setItemMeta(meta);
                     player.getInventory().addItem(stack);
                     //player.getWorld().dropItemNaturally(player.getLocation(), stack);
                 }
-                ItemStack stack = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
-                ItemMeta meta = stack.getItemMeta();
-                if (meta != null) {
-                    meta.getPersistentDataContainer().set(item, PersistentDataType.BOOLEAN, true);
-                    meta.getPersistentDataContainer().set(bundle, PersistentDataType.BOOLEAN, true);
-                    meta.getPersistentDataContainer().set(chessB,PersistentDataType.BOOLEAN,true);
-                    meta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,"");
-                    meta.getPersistentDataContainer().set(BIMcount, PersistentDataType.INTEGER, 32);
-                    meta.getPersistentDataContainer().set(BIcount, PersistentDataType.INTEGER, 0);
-                    meta.setCustomModelData(33102);
-                    List<String> lore = new ArrayList<>();
-                    lore.add("§r§7Шахматные фигуры можно ставить только на доску");
-                    lore.add("§r§7Количество фигур в мешочке: §6%s/%s".formatted(meta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),meta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
-                    meta.setLore(lore);
-                    meta.setDisplayName("§rМешочек с шахматами");
-                }
-                stack.setItemMeta(meta);
-                player.getInventory().addItem(stack);
+
 
 
             } else if (command.getName().equals("base64")) {
                 Player player = (Player) sender;
                 ItemStack stack = player.getInventory().getItemInMainHand();
                 String items = convertItemsToBase64(new ArrayList<>(List.of(stack)));
-
+                System.out.println(items);
                 player.getInventory().addItem(getItemsFromBase64(items).getFirst());
             } else {
                 Player player = (Player) sender;
@@ -756,14 +940,18 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
                 ItemMeta meta = stack.getItemMeta();
                 if (meta != null) {
                     meta.getPersistentDataContainer().set(item, PersistentDataType.BOOLEAN, true);
-                    meta.getPersistentDataContainer().set(board,PersistentDataType.BOOLEAN,true);
-
-                    meta.setCustomModelData(33230); //board
-                    meta.setDisplayName("§rШахматная доска");
+                    meta.getPersistentDataContainer().set(bundle, PersistentDataType.BOOLEAN, true);
+                    meta.getPersistentDataContainer().set(dominoB,PersistentDataType.BOOLEAN,true);
+                    meta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,"");
+                    meta.getPersistentDataContainer().set(BIMcount, PersistentDataType.INTEGER, 28);
+                    meta.getPersistentDataContainer().set(BIcount, PersistentDataType.INTEGER, 0);
+                    meta.getPersistentDataContainer().set(RObundle,PersistentDataType.BOOLEAN,true);
+                    meta.setCustomModelData(33101);
                     List<String> lore = new ArrayList<>();
-                    lore.add("§r§7Размещается на поверхность 2х2, покрытую коврами");
-                    lore.add("§r§7Можно собрать нажав по боковой или нижней границе доски");
+                    lore.add("§r§7Выдает одну случайную домино");
+                    lore.add("§r§7Количество домино в мешочке: §6%s/%s".formatted(meta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),meta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
                     meta.setLore(lore);
+                    meta.setDisplayName("§rМешочек с домино");
                 }
                 stack.setItemMeta(meta);
                 player.getInventory().addItem(stack);
@@ -771,25 +959,8 @@ public final class TablePlays extends JavaPlugin implements Listener{ //, Comman
         }
         return true;
     }
-    */
 
-    public static void roundEntityYaw(Entity entity) {
-        float yaw = entity.getLocation().getYaw();
-        float[] possibleAngles = {0, 90, 180, 270};
-        float closestAngle = possibleAngles[0];
-        float minDifference = Math.abs(yaw - closestAngle);
-
-        for (float angle : possibleAngles) {
-            float difference = Math.abs(yaw - angle);
-            if (difference < minDifference) {
-                closestAngle = angle;
-                minDifference = difference;
-            }
-        }
-
-        entity.getLocation().setYaw(closestAngle);
-        entity.teleport(entity.getLocation());  // Apply the change by teleporting the entity to its own location
-    }
+     */
 
     public static ArrayList<ItemStack> getItemsFromBase64(String baseString) {
         try {

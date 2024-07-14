@@ -15,6 +15,7 @@ public class RecipeManager {
         checkers(plugin);
         board(plugin);
         chess(plugin);
+        domino(plugin);
     }
     private static void cards52(Plugin plugin){
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards52bundle"),TablePlays.getItemsFromBase64(bigdata.get52bundle()).getFirst());
@@ -105,6 +106,20 @@ public class RecipeManager {
                 " L "
         );
         recipe.setIngredient('Q', Material.BONE_BLOCK);
+        recipe.setIngredient('B',Material.BLACK_DYE);
+        recipe.setIngredient('S', Material.STRING);
+        recipe.setIngredient('W',Material.WHITE_DYE);
+        recipe.setIngredient('L', Material.LEATHER);
+        Bukkit.addRecipe(recipe);
+    }
+    private static void domino(Plugin plugin){
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"dominobundle"),TablePlays.getItemsFromBase64(bigdata.getDominoBundle()).getFirst());
+        recipe.shape(
+                " M ",
+                "WSB",
+                " L "
+        );
+        recipe.setIngredient('M', Material.MANGROVE_LOG);
         recipe.setIngredient('B',Material.BLACK_DYE);
         recipe.setIngredient('S', Material.STRING);
         recipe.setIngredient('W',Material.WHITE_DYE);
