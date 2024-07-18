@@ -1484,7 +1484,6 @@ public class bigdata {
      *
      * @return a pretty short string, containing dice.
      */
-    /*
     public static String getDice(){
         return """
                 rO0ABXcEAAAAAXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFw
@@ -1503,7 +1502,6 @@ public class bigdata {
                 aXRlbSI6IDFiCn0=
                 """;
     }
-    */
 
     /**
      *

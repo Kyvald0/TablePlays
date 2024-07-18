@@ -3,6 +3,9 @@ package org.pythonchik.tableplays;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,7 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public final class TablePlays extends JavaPlugin implements Listener { //, CommandExecutor
+public final class TablePlays extends JavaPlugin implements Listener { //, CommandExecutor { //
     /**
      * tag -   tableplays:titem   - bool, every item should have this, a proof that this is a plugin item
      */
@@ -92,10 +95,10 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
      * tag -   tableplays:tbmicount   - int, maximum abount of items inside a bundle
      */
     NamespacedKey BIMcount = new NamespacedKey(this,"TBMIcount");
-    ///**
-    // * tag -   tableplays:tdice   - bool, if item is a dice
-    // */
-    //NamespacedKey dice = new NamespacedKey(this,"Tdice");
+    /**
+     * tag -   tableplays:tdice   - bool, if item is a dice
+     */
+    NamespacedKey dice = new NamespacedKey(this,"Tdice");
     /**
      * tag -   tableplays:tchessp   - bool, if this is a chess piece
      */
@@ -152,16 +155,19 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                             eyeloc.add(direction.clone().multiply(0.002));
                             if (eyeloc.getBlock().getType() != Material.AIR) {break;}
                             Location highes = null;
+                            Interaction high = null;
                             boolean bbase = false;
                             for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
                                 if (entity instanceof Interaction) {
                                     if (highes == null) {
                                         highes = entity.getLocation();
+                                        high = (Interaction) entity;
                                         if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
                                             bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
                                     }
                                     if (highes.getY() < entity.getLocation().getY()) {
                                         highes = entity.getLocation();
+                                        high = (Interaction) entity;
                                         if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
                                             bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
                                     }
@@ -172,7 +178,7 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                                     eyeloc.setX(highes.getX());
                                     eyeloc.setZ(highes.getZ());
                                 }
-                                eyeloc.setY(highes.getY() + 0.002);
+                                eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
                                 break;
                             }
                         } //getting eyeloc as pos where you want to place card
@@ -181,7 +187,7 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         Location display_location = player.getLocation();
                         display_location.setPitch(event.getPlayer().isSneaking() ? 180 : 0);
                         ItemDisplay display = player.getLocation().getWorld().spawn(display_location, ItemDisplay.class);
-                        if (handmeta.getPersistentDataContainer().has(hcard)){
+                        if (handmeta.getPersistentDataContainer().has(hcard)) {
                             handmeta.setCustomModelData(handmeta.getPersistentDataContainer().get(hcard, PersistentDataType.INTEGER));
                             handmeta.getPersistentDataContainer().remove(hcard);
                             handstack.setItemMeta(handmeta);
@@ -271,16 +277,19 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                             eyeloc.add(direction.clone().multiply(0.002));
                             if (eyeloc.getBlock().getType() != Material.AIR) {break;}
                             Location highes = null;
+                            Interaction high = null;
                             boolean bbase = false;
                             for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
                                 if (entity instanceof Interaction) {
                                     if (highes == null) {
                                         highes = entity.getLocation();
+                                        high = (Interaction) entity;
                                         if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
                                             bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
                                     }
                                     if (highes.getY() < entity.getLocation().getY()) {
                                         highes = entity.getLocation();
+                                        high = (Interaction) entity;
                                         if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
                                             bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
                                     }
@@ -291,7 +300,7 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                                     eyeloc.setX(highes.getX());
                                     eyeloc.setZ(highes.getZ());
                                 }
-                                eyeloc.setY(highes.getY() + 0.002);
+                                eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
                                 break;
                             }
                         } //getting eyeloc as pos where you want to place card
@@ -318,8 +327,9 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                 }
             }
 
-            /*
+
             else if (handstack.getItemMeta().getPersistentDataContainer().has(dice)) {
+
                 Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
                 if (block != null) {
                     Vector direction = player.getEyeLocation().getDirection();
@@ -328,16 +338,19 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         eyeloc.add(direction.clone().multiply(0.002));
                         if (eyeloc.getBlock().getType() != Material.AIR) {break;}
                         Location highes = null;
+                        Interaction high = null;
                         boolean bbase = false;
                         for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
-                            if (entity instanceof Interaction) {
+                            if (entity instanceof Interaction && !entity.getPassengers().isEmpty()) {
                                 if (highes == null) {
                                     highes = entity.getLocation();
+                                    high = (Interaction)entity;
                                     if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
                                         bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
                                 }
                                 if (highes.getY() < entity.getLocation().getY()) {
                                     highes = entity.getLocation();
+                                    high = (Interaction) entity;
                                     if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
                                         bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
                                 }
@@ -348,15 +361,11 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                                 eyeloc.setX(highes.getX());
                                 eyeloc.setZ(highes.getZ());
                             }
-                            eyeloc.setY(highes.getY() + 0.002);
+                            eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
                             break;
                         }
                     } //getting eyeloc as pos where you want to place card
                     eyeloc.setY(eyeloc.getY() + 0.005); //moving eyeloc up a bit, to not clip into anything
-
-                    //eyeloc.setY(eyeloc.clone().getY() + 0.002); //moving eyeloc up a bit, to not clip into anything
-
-                    System.out.println(eyeloc.serialize()); //TODO prints
 
                     Interaction interaction = player.getLocation().getWorld().spawn(eyeloc.clone(), Interaction.class);
 
@@ -367,18 +376,17 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                     display.setItemStack(handstack);
                     player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
                     display.setRotation(display.getLocation().getYaw(),0);
-                    System.out.println(interaction.getUniqueId()); //TODO prints
-                    System.out.println(display.getUniqueId());
 
-                    display.setTransformation(new Transformation(new Vector3f(0, 0.15f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
-                    interaction.setInteractionHeight(0.3f);
-                    interaction.setInteractionWidth(0.3f);
+                    display.setTransformation(new Transformation(new Vector3f(0, 0.17f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
+                    interaction.setInteractionHeight(0.35f);
+                    interaction.setInteractionWidth(0.35f);
+                    interaction.getPersistentDataContainer().set(dice,PersistentDataType.BOOLEAN,true);
                     interaction.addPassenger(display);
                     player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
 
                 }
             }
-            */ //dice
+             //dice
             else if (handmeta.getPersistentDataContainer().has(board)) {
                 Block block1 = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
                 if (block1 != null) {
@@ -495,16 +503,19 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                             eyeloc.add(direction.clone().multiply(0.002));
                             if (eyeloc.getBlock().getType() != Material.AIR) {break;}
                             Location highes = null;
+                            Interaction high = null;
                             boolean bbase = false;
                             for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
                                 if (entity instanceof Interaction) {
                                     if (highes == null) {
                                         highes = entity.getLocation();
+                                        high = (Interaction) entity;
                                         if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
                                             bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
                                     }
                                     if (highes.getY() < entity.getLocation().getY()) {
                                         highes = entity.getLocation();
+                                        high = (Interaction) entity;
                                         if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
                                             bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
                                     }
@@ -515,7 +526,7 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                                     eyeloc.setX(highes.getX());
                                     eyeloc.setZ(highes.getZ());
                                 }
-                                eyeloc.setY(highes.getY() + 0.002);
+                                eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
                                 break;
                             }
                         } //getting eyeloc as pos where you want to place card
@@ -638,7 +649,9 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
             else if (event.getRightClicked().getPersistentDataContainer().has(base) && event.getRightClicked().getPersistentDataContainer().has(square) && !event.getRightClicked().getPassengers().isEmpty()) {
                 Interaction interaction2 = (Interaction) event.getRightClicked();
                 ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
-                event.getPlayer().getInventory().addItem(stack);
+                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
+                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
+                }
                 interaction2.getPassengers().getFirst().remove();
                 return;
             }
@@ -664,11 +677,23 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
             else if (event.getRightClicked().getPersistentDataContainer().has(base) && event.getRightClicked().getPersistentDataContainer().has(square) && !event.getRightClicked().getPassengers().isEmpty()) {
                 Interaction interaction2 = (Interaction) event.getRightClicked();
                 ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
-                event.getPlayer().getInventory().addItem(stack);
+                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
+                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
+                }
                 interaction2.getPassengers().getFirst().remove();
                 return;
             }
 
+            if (event.getRightClicked().getPersistentDataContainer().has(dice)) {
+                Interaction interaction2 = (Interaction) event.getRightClicked();
+                ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
+                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
+                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
+                }
+                interaction2.getPassengers().getFirst().remove();
+                interaction2.remove();
+                return;
+            }
 
             if (!event.getRightClicked().getPassengers().isEmpty() && event.getRightClicked().getPassengers().size() == 1) {
             if (event.getPlayer().getInventory().getItemInOffHand().getItemMeta() != null
@@ -738,8 +763,8 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
 
             if (event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
                     && event.getPlayer().getInventory().getItemInMainHand().getItemMeta() != null
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(item) //) {
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(card)) {
+                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(item) ) {
+                    //&& event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(card)) {
                 onItemUse(new PlayerStatisticIncrementEvent(event.getPlayer(),Statistic.USE_ITEM,event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK),event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK)+1,Material.WARPED_FUNGUS_ON_A_STICK));
                 return;
             }
@@ -771,7 +796,7 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
             }
             Interaction interaction2 = (Interaction) event.getRightClicked();
             ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
-            if (stack.getItemMeta().getPersistentDataContainer().has(board)){
+            if (stack.getItemMeta().getPersistentDataContainer().has(board)) {
                 for (Entity entity : interaction2.getLocation().getWorld().getNearbyEntities(interaction2.getBoundingBox().expand(0,0.2,0))){
                     if (entity.equals(interaction2)) continue;
                     for (Entity pasenger : entity.getPassengers()) {
@@ -781,11 +806,15 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                     }
                     entity.remove();
                 }
-                event.getPlayer().getInventory().addItem(stack);
+                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
+                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
+                }
                 interaction2.remove();
                 return;
             }
-            event.getPlayer().getInventory().addItem(stack);
+                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
+                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
+                }
             interaction2.getPassengers().getFirst().remove();
             interaction2.remove();
 
@@ -910,23 +939,19 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
         if (sender instanceof Player) {
             if (command.getName().equals("gimme")) {
                 Player player = (Player) sender;
-
-
-                for (int y = 0; y < 28; y++) {
                     ItemStack stack = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
                     ItemMeta meta = stack.getItemMeta();
                     if (meta != null) {
                         meta.getPersistentDataContainer().set(item, PersistentDataType.BOOLEAN, true);
-                        meta.getPersistentDataContainer().set(domino, PersistentDataType.BOOLEAN, true);
-                        meta.setCustomModelData(33300+y);
-                        meta.setDisplayName("§rДомино");
+                        meta.getPersistentDataContainer().set(dice, PersistentDataType.BOOLEAN, true);
+                        meta.setCustomModelData(33400);
+                        meta.setDisplayName("§rИгральная кость");
                     }
                     stack.setItemMeta(meta);
-                    player.getInventory().addItem(stack);
-                    //player.getWorld().dropItemNaturally(player.getLocation(), stack);
+                if (!player.getInventory().addItem(stack).equals(new HashMap<>())){
+                    player.getWorld().dropItemNaturally(player.getLocation(),stack);
                 }
-
-
+                    //player.getWorld().dropItemNaturally(player.getLocation(), stack);
 
             } else if (command.getName().equals("base64")) {
                 Player player = (Player) sender;
@@ -961,6 +986,8 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
     }
 
      */
+
+
 
     public static ArrayList<ItemStack> getItemsFromBase64(String baseString) {
         try {

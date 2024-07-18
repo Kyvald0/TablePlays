@@ -11,7 +11,7 @@ public class RecipeManager {
         cards52(plugin);
         cards36(plugin);
         cards54(plugin);
-        //dice(plugin);
+        dice(plugin);
         checkers(plugin);
         board(plugin);
         chess(plugin);
@@ -59,21 +59,19 @@ public class RecipeManager {
         recipe.setIngredient('L', Material.LEATHER);
         Bukkit.addRecipe(recipe);
     }
-    /*
-    private static void dice(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"dice"),TablePlays.getItemsFromBase64(bigdata.getDice()).getFirst());
+    private static void dice(Plugin plugin) {
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "dice"), TablePlays.getItemsFromBase64(bigdata.getDice()).getFirst());
         recipe.shape(
                 " W ",
                 "ABA",
                 " b "
         );
         recipe.setIngredient('W', Material.WHITE_DYE);
-        recipe.setIngredient('A',Material.AMETHYST_SHARD);
+        recipe.setIngredient('A', Material.AMETHYST_SHARD);
         recipe.setIngredient('B', Material.BONE_BLOCK);
-        recipe.setIngredient('b',Material.BLACK_DYE);
+        recipe.setIngredient('b', Material.BLACK_DYE);
         Bukkit.addRecipe(recipe);
     }
-     */
     private static void checkers(Plugin plugin){
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"checkersbundle"),TablePlays.getItemsFromBase64(bigdata.getCheckersBundle()).getFirst());
         recipe.shape(
