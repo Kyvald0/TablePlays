@@ -3,9 +3,6 @@ package org.pythonchik.tableplays;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -201,8 +198,7 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         interaction.setInteractionHeight(0.001f);
                         interaction.setInteractionWidth(0.35f);
                         interaction.setRotation(eyeloc.getYaw(), 0);
-                        player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
-
+                        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
                     }
                 }
                 else if (offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
@@ -268,9 +264,10 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                     && handmeta.getPersistentDataContainer().has(BIcount) && handmeta.getPersistentDataContainer().has(BIMcount)) { //we are holding bundle
                 Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
                 if (block == null || !player.isSneaking()) {
-                    do_stuff(handstack,handmeta,player);
+                    give_card_from_bundle(handstack,handmeta,player);
                 } else {
                     if (player.isSneaking()) {
+                        // place bundle on the ground
                         Vector direction = player.getEyeLocation().getDirection();
                         Location eyeloc = player.getEyeLocation();
                         for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
@@ -321,7 +318,7 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
 
                     } else {
-                        do_stuff(handstack,handmeta,player);
+                        give_card_from_bundle(handstack,handmeta,player);
                     }
 
                 }
@@ -822,7 +819,8 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
         }
     }
 
-    public void do_stuff(ItemStack handstack, ItemMeta handmeta, Player player){
+
+    public void give_card_from_bundle(ItemStack handstack, ItemMeta handmeta, Player player){
         String sitems = handmeta.getPersistentDataContainer().get(Bitems, PersistentDataType.STRING);
         ArrayList<ItemStack> items = getItemsFromBase64(sitems);
         if (!items.isEmpty()) {
@@ -881,14 +879,12 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
         double centerZ = cellZ * cellSize + (cellSize / 2.0);
 
         // Create a new location at the center of the cell
-        Location centerLocation = new Location(
+        return new Location(
                 location.getWorld(),
                 location.getBlockX() + centerX,
                 location.getY(),
                 location.getBlockZ() + centerZ
         );
-
-        return centerLocation;
     }
 
     public static Location getMostBottomLeftCarpet(Block targetBlock) {
@@ -986,8 +982,6 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
     }
 
      */
-
-
 
     public static ArrayList<ItemStack> getItemsFromBase64(String baseString) {
         try {
