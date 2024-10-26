@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'org.pythonchik'
-version = '1.95'
+version = '2.71828'
 
 repositories {
     mavenCentral()

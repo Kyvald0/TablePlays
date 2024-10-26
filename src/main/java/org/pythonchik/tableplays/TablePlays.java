@@ -108,7 +108,10 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
      * tag -   tableplays:tdonimob   - bool, if this is a bundle for dominoes
      */
     NamespacedKey dominoB = new NamespacedKey(this,"TdominoB");
-
+    /**
+     * tag -   tableplays:tchip   - bool, if is the chip
+     */
+    NamespacedKey chip = new NamespacedKey(this,"Tchip");
 
     @Override
     public void onEnable() {
@@ -123,11 +126,11 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
     public void onDisable() {}
 
     @EventHandler
-    public void onItemUse(PlayerStatisticIncrementEvent event){
+    public void onItemUse(PlayerStatisticIncrementEvent event) {
         if (!(event.getStatistic().equals(Statistic.USE_ITEM) && event.getMaterial() != null && event.getMaterial().equals(Material.WARPED_FUNGUS_ON_A_STICK))){
             return;
         }
-        //at this point we know that one of hands have and item, we used, maybe its not a card or bundle tho!
+        //at this point we know that one of hands has and item, we used, maybe it's not a plugin item tho.
         Player player = event.getPlayer();
         ItemStack handstack = player.getInventory().getItemInMainHand();
         ItemMeta handmeta = handstack.getItemMeta();
@@ -135,15 +138,13 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
         ItemMeta offmeta = offstack.getItemMeta();
         if (handstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
                 && handmeta != null
-                && handmeta.getPersistentDataContainer().has(item)) {
-            //in main we have an item
-            if (handmeta.getPersistentDataContainer().has(card)) { // we are holding card
-                if (offstack.getType().equals(Material.AIR) || offmeta == null
-                        || !offmeta.getPersistentDataContainer().has(bundle)
-                        || !offmeta.getPersistentDataContainer().has(BIMcount)
-                        || !offmeta.getPersistentDataContainer().has(BIcount)
-                        || offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) <= offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)){
-                    //in the second hand we are NOT holding a correct bundle
+                && handmeta.getPersistentDataContainer().has(item)
+                && (!offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
+                || offmeta == null
+                || !offmeta.getPersistentDataContainer().has(item))) { // only holding main hand
+            for (NamespacedKey tag : handmeta.getPersistentDataContainer().getKeys()) {
+                if (tag.equals(card)) {
+                    // we are holding card
                     Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
                     if (block != null) {
                         Vector direction = player.getEyeLocation().getDirection();
@@ -190,7 +191,12 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                             handstack.setItemMeta(handmeta);
                         }
                         display.setItemStack(handstack);
-                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        if (handstack.getAmount() == 1){
+                            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        } else {
+                            handstack.setAmount(handstack.getAmount()-1);
+                            player.getInventory().setItemInMainHand(handstack);
+                        }
                         display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(1, 1, 1), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
 
                         Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
@@ -200,74 +206,12 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         interaction.setRotation(eyeloc.getYaw(), 0);
                         if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
                     }
+                    return;
                 }
-                else if (offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
-                        && offmeta.getPersistentDataContainer().has(bundle)
-                        && offmeta.getPersistentDataContainer().has(Cbundle)
-                        && offmeta.getPersistentDataContainer().has(Bitems)
-                        && offmeta.getPersistentDataContainer().has(BIMcount)
-                        && offmeta.getPersistentDataContainer().has(BIcount)
-                        && offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
-                    // main hand - card
-                    // offhand good bundle to place card in
-                    String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
-                    ArrayList<ItemStack> items = getItemsFromBase64(sitems);
-                    items.add(handstack);
-                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    String sitem = convertItemsToBase64(items);
-                    offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
-                    offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
-                    List<String> lore = offmeta.getLore();
-                    if (lore == null) {
-                        lore = new ArrayList<>();
-                        lore.add("§r§7При использовании выдает случайную карту");
-                        lore.add("§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
-                    } else {
-                        lore.set(1, "§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
-                    }
-                    offmeta.setLore(lore);
-                    offstack.setItemMeta(offmeta);
-                } // card in main, good bundle in off, placing card in bundle
-                /*
-                else if (offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
-                        && handmeta.getPersistentDataContainer().has(ucard)
-                        && offmeta.getPersistentDataContainer().has(bundle)
-                        && offmeta.getPersistentDataContainer().has(Ubundle)
-                        && offmeta.getPersistentDataContainer().has(Bitems)
-                        && offmeta.getPersistentDataContainer().has(BIMcount)
-                        && offmeta.getPersistentDataContainer().has(BIcount)
-                        && offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
-                    String sitems = offmeta.getPersistentDataContainer().get(Bitems, PersistentDataType.STRING);
-                    ArrayList<ItemStack> items = getItemsFromBase64(sitems);
-                    items.add(handstack);
-                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    String sitem = convertItemsToBase64(items);
-                    offmeta.getPersistentDataContainer().set(Bitems, PersistentDataType.STRING, sitem);
-                    offmeta.getPersistentDataContainer().set(BIcount, PersistentDataType.INTEGER, offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER) + 1);
-                    List<String> lore = offmeta.getLore();
-                    if (lore == null) {
-                        lore = new ArrayList<>();
-                        lore.add("§r§7При использовании выдает случайную карту игры UNO");
-                        lore.add("§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
-                    } else {
-                        lore.set(1, "§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
-                    }
-                    offmeta.setLore(lore);
-                    offstack.setItemMeta(offmeta);
-
-                }
-
-                 */
-            }
-
-            else if (handmeta.getPersistentDataContainer().has(bundle) && handmeta.getPersistentDataContainer().has(Bitems)
-                    && handmeta.getPersistentDataContainer().has(BIcount) && handmeta.getPersistentDataContainer().has(BIMcount)) { //we are holding bundle
-                Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
-                if (block == null || !player.isSneaking()) {
-                    give_card_from_bundle(handstack,handmeta,player);
-                } else {
-                    if (player.isSneaking()) {
-                        // place bundle on the ground
+                else if (tag.equals(bundle) && handmeta.getPersistentDataContainer().has(Bitems) && handmeta.getPersistentDataContainer().has(BIcount) && handmeta.getPersistentDataContainer().has(BIMcount)) {
+                    Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block != null && player.isSneaking()) {
+                        //place the bundle on the ground
                         Vector direction = player.getEyeLocation().getDirection();
                         Location eyeloc = player.getEyeLocation();
                         for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
@@ -307,7 +251,12 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         display_location.setPitch(90);
                         ItemDisplay display = player.getLocation().getWorld().spawn(display_location, ItemDisplay.class);
                         display.setItemStack(handstack);
-                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        if (handstack.getAmount() == 1){
+                            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        } else {
+                            handstack.setAmount(handstack.getAmount()-1);
+                            player.getInventory().setItemInMainHand(handstack);
+                        }
                         display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.6f, 0.6f, 0.6f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
 
                         Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
@@ -315,183 +264,117 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         interaction.setInteractionHeight(0.001f);
                         interaction.setInteractionWidth(0.45f);
                         interaction.setRotation(eyeloc.getYaw(), 0);
-                        player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
-
+                        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
                     } else {
                         give_card_from_bundle(handstack,handmeta,player);
                     }
-
+                    return;
                 }
-            }
-
-
-            else if (handstack.getItemMeta().getPersistentDataContainer().has(dice)) {
-
-                Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
-                if (block != null) {
-                    Vector direction = player.getEyeLocation().getDirection();
-                    Location eyeloc = player.getEyeLocation();
-                    for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
-                        eyeloc.add(direction.clone().multiply(0.002));
-                        if (eyeloc.getBlock().getType() != Material.AIR) {break;}
-                        Location highes = null;
-                        Interaction high = null;
-                        boolean bbase = false;
-                        for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
-                            if (entity instanceof Interaction && !entity.getPassengers().isEmpty()) {
-                                if (highes == null) {
-                                    highes = entity.getLocation();
-                                    high = (Interaction)entity;
-                                    if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
-                                        bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
-                                }
-                                if (highes.getY() < entity.getLocation().getY()) {
-                                    highes = entity.getLocation();
-                                    high = (Interaction) entity;
-                                    if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
-                                        bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                else if (tag.equals(dice)) {
+                    Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block != null) {
+                        Vector direction = player.getEyeLocation().getDirection();
+                        Location eyeloc = player.getEyeLocation();
+                        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
+                            eyeloc.add(direction.clone().multiply(0.002));
+                            if (eyeloc.getBlock().getType() != Material.AIR) {break;}
+                            Location highes = null;
+                            Interaction high = null;
+                            boolean bbase = false;
+                            for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
+                                if (entity instanceof Interaction && !entity.getPassengers().isEmpty()) {
+                                    if (highes == null) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction)entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                    if (highes.getY() < entity.getLocation().getY()) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction) entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
                                 }
                             }
-                        }
-                        if (highes != null) {
-                            if (bbase) {
-                                eyeloc.setX(highes.getX());
-                                eyeloc.setZ(highes.getZ());
+                            if (highes != null) {
+                                if (bbase) {
+                                    eyeloc.setX(highes.getX());
+                                    eyeloc.setZ(highes.getZ());
+                                }
+                                eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
+                                break;
                             }
-                            eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
-                            break;
-                        }
-                    } //getting eyeloc as pos where you want to place card
-                    eyeloc.setY(eyeloc.getY() + 0.005); //moving eyeloc up a bit, to not clip into anything
+                        } //getting eyeloc as pos where you want to place card
+                        eyeloc.setY(eyeloc.getY() + 0.005); //moving eyeloc up a bit, to not clip into anything
 
-                    Interaction interaction = player.getLocation().getWorld().spawn(eyeloc.clone(), Interaction.class);
-
-                    //item setup
-                    ItemDisplay display = player.getLocation().getWorld().spawn(player.getLocation().clone(), ItemDisplay.class);
-                    handmeta.setCustomModelData(33400+new Random().nextInt(6));
-                    handstack.setItemMeta(handmeta);
-                    display.setItemStack(handstack);
-                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    display.setRotation(display.getLocation().getYaw(),0);
-
-                    display.setTransformation(new Transformation(new Vector3f(0, 0.17f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
-                    interaction.setInteractionHeight(0.35f);
-                    interaction.setInteractionWidth(0.35f);
-                    interaction.getPersistentDataContainer().set(dice,PersistentDataType.BOOLEAN,true);
-                    interaction.addPassenger(display);
-                    player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
-
-                }
-            }
-             //dice
-            else if (handmeta.getPersistentDataContainer().has(board)) {
-                Block block1 = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
-                if (block1 != null) {
-                    Location NNcarpetL = getMostBottomLeftCarpet(block1);
-                    if (NNcarpetL != null) {
-                        NNcarpetL.setPitch(0);
-                        NNcarpetL.setYaw((Math.round(player.getLocation().getYaw()/90+3)%4)*90);
-
-                        NNcarpetL.setY(NNcarpetL.getY() + 0.005); //moving location up a bit, to not clip into anything
-
-
-
-                        //System.out.println(NNcarpetL.serialize()); //TODO prints
-
-                        Interaction interaction = player.getLocation().getWorld().spawn(NNcarpetL.clone(), Interaction.class);
-
-                        //System.out.println(interaction.getUniqueId()); //TODO prints
+                        Interaction interaction = player.getLocation().getWorld().spawn(eyeloc.clone(), Interaction.class);
 
                         //item setup
-                        ItemDisplay display = player.getLocation().getWorld().spawn(NNcarpetL.clone(), ItemDisplay.class);
+                        ItemDisplay display = player.getLocation().getWorld().spawn(player.getLocation().clone(), ItemDisplay.class);
+                        handmeta.setCustomModelData(33400+new Random().nextInt(6));
+                        handstack.setItemMeta(handmeta);
                         display.setItemStack(handstack);
-                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-
-                        //System.out.println(display.getUniqueId()); //TODO prints
-
-                        for (int x = 0;x<10;x++){
-                            for (int y = 0; y<10;y++) {
-                                Interaction subint = NNcarpetL.getWorld().spawn(NNcarpetL, Interaction.class);
-                                subint.setInteractionWidth(0.2f);
-                                subint.setInteractionHeight(0.01f);
-                                subint.getPersistentDataContainer().set(base, PersistentDataType.BOOLEAN, true);
-                                subint.getPersistentDataContainer().set(square,PersistentDataType.BOOLEAN,true);
-                                subint.teleport(NNcarpetL.clone().add(-0.9+(x*0.2), 0.09, -0.9+(y*0.2)));
-                            }
+                        if (handstack.getAmount() == 1){
+                            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        } else {
+                            handstack.setAmount(handstack.getAmount()-1);
+                            player.getInventory().setItemInMainHand(handstack);
                         }
+                        display.setRotation(display.getLocation().getYaw(),0);
 
-                        display.setRotation(display.getLocation().getYaw(), 0);
-                        display.setTransformation(new Transformation(new Vector3f(0, 0.06f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(1f, 0.3f, 1f), new AxisAngle4f(0, 0, 0, 0)));
-                        interaction.setInteractionHeight(0.07f);
-                        interaction.setInteractionWidth(2f); //0.2f
+                        display.setTransformation(new Transformation(new Vector3f(0, 0.17f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
+                        interaction.setInteractionHeight(0.35f);
+                        interaction.setInteractionWidth(0.35f);
+                        interaction.getPersistentDataContainer().set(dice,PersistentDataType.BOOLEAN,true);
                         interaction.addPassenger(display);
-                        player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+                        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+                        return;
                     }
                 }
-            }
+                else if (tag.equals(board)) {
+                    Block block1 = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block1 != null) {
+                        Location NNcarpetL = getMostBottomLeftCarpet(block1);
+                        if (NNcarpetL != null) {
+                            NNcarpetL.setPitch(0);
+                            NNcarpetL.setYaw((Math.round(player.getLocation().getYaw()/90+3)%4)*90);
 
-            else if (handmeta.getPersistentDataContainer().has(checker) && offmeta != null && offmeta.getPersistentDataContainer().has(checkerB)
-                    && offmeta.getPersistentDataContainer().has(bundle) && offmeta.getPersistentDataContainer().has(Bitems)
-                    && offmeta.getPersistentDataContainer().has(BIcount) && offmeta.getPersistentDataContainer().has(BIMcount)
-                    && offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
+                            NNcarpetL.setY(NNcarpetL.getY() + 0.005); //moving location up a bit, to not clip into anything
 
-                String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
-                ArrayList<ItemStack> items = getItemsFromBase64(sitems);
-                if (handmeta.getCustomModelData()%2==1) {
-                    handmeta.setCustomModelData(handmeta.getCustomModelData()-1);
-                    handstack.setItemMeta(handmeta);
+                            Interaction interaction = player.getLocation().getWorld().spawn(NNcarpetL.clone(), Interaction.class);
+
+                            //item setup
+                            ItemDisplay display = player.getLocation().getWorld().spawn(NNcarpetL.clone(), ItemDisplay.class);
+                            display.setItemStack(handstack);
+                            if (handstack.getAmount() == 1){
+                                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                            } else {
+                                handstack.setAmount(handstack.getAmount()-1);
+                                player.getInventory().setItemInMainHand(handstack);
+                            }
+                            for (int x = 0;x<10;x++){
+                                for (int y = 0; y<10;y++) {
+                                    Interaction subint = NNcarpetL.getWorld().spawn(NNcarpetL, Interaction.class);
+                                    subint.setInteractionWidth(0.2f);
+                                    subint.setInteractionHeight(0.01f);
+                                    subint.getPersistentDataContainer().set(base, PersistentDataType.BOOLEAN, true);
+                                    subint.getPersistentDataContainer().set(square,PersistentDataType.BOOLEAN,true);
+                                    subint.teleport(NNcarpetL.clone().add(-0.9+(x*0.2), 0.09, -0.9+(y*0.2)));
+                                }
+                            }
+
+                            display.setRotation(display.getLocation().getYaw(), 0);
+                            display.setTransformation(new Transformation(new Vector3f(0, 0.06f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(1f, 0.3f, 1f), new AxisAngle4f(0, 0, 0, 0)));
+                            interaction.setInteractionHeight(0.07f);
+                            interaction.setInteractionWidth(2f); //0.2f
+                            interaction.addPassenger(display);
+                            if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+                        }
+                    }
+                    return;
                 }
-                items.add(handstack);
-                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                String sitem = convertItemsToBase64(items);
-                offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
-                offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
-                List<String> lore = offmeta.getLore();
-                if (lore == null) {
-                    lore = new ArrayList<>();
-                    lore.add("§r§7Шашки можно ставить только на доску");
-                    lore.add("§r§7Количество шашек в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
-                } else {
-                    lore.set(1, "§r§7Количество шашек в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
-                }
-                offmeta.setLore(lore);
-                offstack.setItemMeta(offmeta);
-
-            }
-
-            else if (handmeta.getPersistentDataContainer().has(chessp) && offmeta != null && offmeta.getPersistentDataContainer().has(chessB)
-                    && offmeta.getPersistentDataContainer().has(bundle) && offmeta.getPersistentDataContainer().has(Bitems)
-                    && offmeta.getPersistentDataContainer().has(BIcount) && offmeta.getPersistentDataContainer().has(BIMcount)
-                    && offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
-
-                String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
-                ArrayList<ItemStack> items = getItemsFromBase64(sitems);
-                items.add(handstack);
-                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                String sitem = convertItemsToBase64(items);
-                offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
-                offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
-                List<String> lore = offmeta.getLore();
-                if (lore == null) {
-                    lore = new ArrayList<>();
-                    lore.add("§r§7Шахматные фигуры можно ставить только на доску");
-                    lore.add("§r§7Количество фигур в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
-                } else {
-                    lore.set(1, "§r§7Количество фигур в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
-                }
-                offmeta.setLore(lore);
-                offstack.setItemMeta(offmeta);
-
-            }
-
-            if (handmeta.getPersistentDataContainer().has(domino)) { // we are holding domino
-                if (offstack.getType().equals(Material.AIR) || offmeta == null
-                        || !offmeta.getPersistentDataContainer().has(bundle)
-                        || !offmeta.getPersistentDataContainer().has(BIMcount)
-                        || !offmeta.getPersistentDataContainer().has(dominoB)
-                        || !offmeta.getPersistentDataContainer().has(BIcount)
-                        || offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) <= offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
-                    //in the second hand we are NOT holding a correct bundle
+                else if (tag.equals(domino)) {
                     Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
                     if (block != null) {
                         Vector direction = player.getEyeLocation().getDirection();
@@ -533,13 +416,13 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         display_location.setPitch(0);
                         display_location.setYaw((Math.round(display_location.getYaw()/90)%4)*90);
                         ItemDisplay display = player.getLocation().getWorld().spawn(display_location, ItemDisplay.class);
-                        if (handmeta.getPersistentDataContainer().has(hcard)) {
-                            handmeta.setCustomModelData(handmeta.getPersistentDataContainer().get(hcard, PersistentDataType.INTEGER));
-                            handmeta.getPersistentDataContainer().remove(hcard);
-                            handstack.setItemMeta(handmeta);
-                        }
                         display.setItemStack(handstack);
-                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        if (handstack.getAmount() == 1){
+                            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        } else {
+                            handstack.setAmount(handstack.getAmount()-1);
+                            player.getInventory().setItemInMainHand(handstack);
+                        }
                         display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
 
                         Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
@@ -547,159 +430,578 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                         interaction.setInteractionHeight(0.001f);
                         interaction.setInteractionWidth(0.15f);
                         interaction.setRotation(display_location.getYaw(), 0);
-                        player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
-
+                        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+                        return;
                     }
                 }
-                else if (offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
-                        && offmeta.getPersistentDataContainer().has(bundle)
-                        && offmeta.getPersistentDataContainer().has(dominoB)
-                        && offmeta.getPersistentDataContainer().has(Bitems)
-                        && offmeta.getPersistentDataContainer().has(BIMcount)
-                        && offmeta.getPersistentDataContainer().has(BIcount)
-                        && offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
-                    // main hand - card
-                    // offhand good bundle to place card in
-                    String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
-                    ArrayList<ItemStack> items = getItemsFromBase64(sitems);
-                    items.add(handstack);
-                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    String sitem = convertItemsToBase64(items);
-                    offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
-                    offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
-                    List<String> lore = offmeta.getLore();
-                    if (lore == null) {
-                        lore = new ArrayList<>();
-                        lore.add("§r§7Выдает одну случайную домино");
-                        lore.add("§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
-                    } else {
-                        lore.set(1, "§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
-                    }
-                    offmeta.setLore(lore);
-                    offstack.setItemMeta(offmeta);
-                } // domino in main, good bundle in off, placing domino in bundle
                 /*
-                else if (offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
-                        && handmeta.getPersistentDataContainer().has(ucard)
-                        && offmeta.getPersistentDataContainer().has(bundle)
-                        && offmeta.getPersistentDataContainer().has(Ubundle)
-                        && offmeta.getPersistentDataContainer().has(Bitems)
-                        && offmeta.getPersistentDataContainer().has(BIMcount)
-                        && offmeta.getPersistentDataContainer().has(BIcount)
-                        && offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
+                else if (tag.equals(chip)) {
+                    Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block != null) {
+                        Vector direction = player.getEyeLocation().getDirection();
+                        Location eyeloc = player.getEyeLocation();
+                        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
+                            eyeloc.add(direction.clone().multiply(0.002));
+                            if (eyeloc.getBlock().getType() != Material.AIR) {break;}
+                            Location highes = null;
+                            Interaction high = null;
+                            boolean bbase = false;
+                            for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
+                                if (entity instanceof Interaction) {
+                                    if (highes == null) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction) entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                    if (highes.getY() < entity.getLocation().getY()) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction) entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                }
+                            }
+                            if (highes != null) {
+                                if (bbase) {
+                                    eyeloc.setX(highes.getX());
+                                    eyeloc.setZ(highes.getZ());
+                                }
+                                eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
+                                break;
+                            }
+                        } //getting eyeloc as pos where you want to place card
+                        eyeloc.setY(eyeloc.getY() + 0.005); //moving eyeloc up a bit, to not clip into anything
+                        eyeloc = moveToChipCenter(eyeloc);
+                        Location display_location = player.getLocation();
+                        display_location.setPitch(0);
+                        display_location.setYaw((Math.round(display_location.getYaw()/90)%4)*90 + (new java.util.Random().nextBoolean() ? 45 : 0));
+                        ItemDisplay display = player.getLocation().getWorld().spawn(display_location, ItemDisplay.class);
+
+                        display.setItemStack(handstack);
+                        handstack.setAmount(handstack.getAmount()-1);
+                        player.getInventory().setItemInMainHand(handstack);
+                        display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.5f, 0.25f, 0.5f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
+
+                        Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
+                        interaction.addPassenger(display);
+                        interaction.setInteractionHeight(0.025f);
+                        interaction.setInteractionWidth(0.25f);
+                        interaction.setRotation(display_location.getYaw(), 0);
+                        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+                    }
+                }
+                 */
+            }
+        } else if (offstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
+                && offmeta != null
+                && offmeta.getPersistentDataContainer().has(item)
+                && (!handstack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
+                || handmeta == null
+                || !handmeta.getPersistentDataContainer().has(item))) { // only holding off hand
+            for (NamespacedKey tag : offmeta.getPersistentDataContainer().getKeys()) {
+                if (tag.equals(card)) {
+                    // we are holding card
+                    Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block != null) {
+                        Vector direction = player.getEyeLocation().getDirection();
+                        Location eyeloc = player.getEyeLocation();
+                        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
+                            eyeloc.add(direction.clone().multiply(0.002));
+                            if (eyeloc.getBlock().getType() != Material.AIR) {break;}
+                            Location highes = null;
+                            Interaction high = null;
+                            boolean bbase = false;
+                            for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
+                                if (entity instanceof Interaction) {
+                                    if (highes == null) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction) entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                    if (highes.getY() < entity.getLocation().getY()) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction) entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                }
+                            }
+                            if (highes != null) {
+                                if (bbase) {
+                                    eyeloc.setX(highes.getX());
+                                    eyeloc.setZ(highes.getZ());
+                                }
+                                eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
+                                break;
+                            }
+                        } //getting eyeloc as pos where you want to place card
+                        eyeloc.setY(eyeloc.getY() + 0.005); //moving eyeloc up a bit, to not clip into anything
+
+                        Location display_location = player.getLocation();
+                        display_location.setPitch(event.getPlayer().isSneaking() ? 180 : 0);
+                        ItemDisplay display = player.getLocation().getWorld().spawn(display_location, ItemDisplay.class);
+                        if (offmeta.getPersistentDataContainer().has(hcard)) {
+                            offmeta.setCustomModelData(offmeta.getPersistentDataContainer().get(hcard, PersistentDataType.INTEGER));
+                            offmeta.getPersistentDataContainer().remove(hcard);
+                            offstack.setItemMeta(offmeta);
+                        }
+                        display.setItemStack(offstack);
+                        if (offstack.getAmount() == 1){
+                            player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+                        } else {
+                            offstack.setAmount(offstack.getAmount()-1);
+                            player.getInventory().setItemInOffHand(offstack);
+                        }
+                        display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(1, 1, 1), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
+
+                        Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
+                        interaction.addPassenger(display);
+                        interaction.setInteractionHeight(0.001f);
+                        interaction.setInteractionWidth(0.35f);
+                        interaction.setRotation(eyeloc.getYaw(), 0);
+                        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+                        return;
+                    }
+                }
+                else if (tag.equals(dice)) {
+                    Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block != null) {
+                        Vector direction = player.getEyeLocation().getDirection();
+                        Location eyeloc = player.getEyeLocation();
+                        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
+                            eyeloc.add(direction.clone().multiply(0.002));
+                            if (eyeloc.getBlock().getType() != Material.AIR) {break;}
+                            Location highes = null;
+                            Interaction high = null;
+                            boolean bbase = false;
+                            for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
+                                if (entity instanceof Interaction && !entity.getPassengers().isEmpty()) {
+                                    if (highes == null) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction)entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                    if (highes.getY() < entity.getLocation().getY()) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction) entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                }
+                            }
+                            if (highes != null) {
+                                if (bbase) {
+                                    eyeloc.setX(highes.getX());
+                                    eyeloc.setZ(highes.getZ());
+                                }
+                                eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
+                                break;
+                            }
+                        } //getting eyeloc as pos where you want to place card
+                        eyeloc.setY(eyeloc.getY() + 0.005); //moving eyeloc up a bit, to not clip into anything
+                        Interaction interaction = player.getLocation().getWorld().spawn(eyeloc.clone(), Interaction.class);
+
+                        //item setup
+                        ItemDisplay display = player.getLocation().getWorld().spawn(player.getLocation().clone(), ItemDisplay.class);
+                        offmeta.setCustomModelData(33400+new Random().nextInt(6));
+                        offstack.setItemMeta(offmeta);
+                        display.setItemStack(offstack);
+                        if (offstack.getAmount() == 1){
+                            player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+                        } else {
+                            offstack.setAmount(offstack.getAmount()-1);
+                            player.getInventory().setItemInOffHand(offstack);
+                        }
+                        display.setRotation(display.getLocation().getYaw(),0);
+
+                        display.setTransformation(new Transformation(new Vector3f(0, 0.17f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
+                        interaction.setInteractionHeight(0.35f);
+                        interaction.setInteractionWidth(0.35f);
+                        interaction.getPersistentDataContainer().set(dice,PersistentDataType.BOOLEAN,true);
+                        interaction.addPassenger(display);
+                        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+
+                    }
+                    return;
+                }
+                else if (tag.equals(board)) {
+                    Block block1 = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block1 != null) {
+                        Location NNcarpetL = getMostBottomLeftCarpet(block1);
+                        if (NNcarpetL != null) {
+                            NNcarpetL.setPitch(0);
+                            NNcarpetL.setYaw((Math.round(player.getLocation().getYaw()/90+3)%4)*90);
+
+                            NNcarpetL.setY(NNcarpetL.getY() + 0.005); //moving location up a bit, to not clip into anything
+
+                            Interaction interaction = player.getLocation().getWorld().spawn(NNcarpetL.clone(), Interaction.class);
+
+                            //item setup
+                            ItemDisplay display = player.getLocation().getWorld().spawn(NNcarpetL.clone(), ItemDisplay.class);
+                            display.setItemStack(offstack);
+                            if (offstack.getAmount() == 1){
+                                player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+                            } else {
+                                offstack.setAmount(offstack.getAmount()-1);
+                                player.getInventory().setItemInOffHand(offstack);
+                            }
+
+                            for (int x = 0;x<10;x++){
+                                for (int y = 0; y<10;y++) {
+                                    Interaction subint = NNcarpetL.getWorld().spawn(NNcarpetL, Interaction.class);
+                                    subint.setInteractionWidth(0.2f);
+                                    subint.setInteractionHeight(0.01f);
+                                    subint.getPersistentDataContainer().set(base, PersistentDataType.BOOLEAN, true);
+                                    subint.getPersistentDataContainer().set(square,PersistentDataType.BOOLEAN,true);
+                                    subint.teleport(NNcarpetL.clone().add(-0.9+(x*0.2), 0.09, -0.9+(y*0.2)));
+                                }
+                            }
+
+                            display.setRotation(display.getLocation().getYaw(), 0);
+                            display.setTransformation(new Transformation(new Vector3f(0, 0.06f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(1f, 0.3f, 1f), new AxisAngle4f(0, 0, 0, 0)));
+                            interaction.setInteractionHeight(0.07f);
+                            interaction.setInteractionWidth(2f); //0.2f
+                            interaction.addPassenger(display);
+                            if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+                        }
+                    }
+                    return;
+                }
+                else if (tag.equals(domino)) {
+                    Block block = player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER);
+                    if (block != null) {
+                        Vector direction = player.getEyeLocation().getDirection();
+                        Location eyeloc = player.getEyeLocation();
+                        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
+                            eyeloc.add(direction.clone().multiply(0.002));
+                            if (eyeloc.getBlock().getType() != Material.AIR) {break;}
+                            Location highes = null;
+                            Interaction high = null;
+                            boolean bbase = false;
+                            for (Entity entity : eyeloc.getWorld().getNearbyEntities(eyeloc, 0.02, 0.02, 0.02)) {
+                                if (entity instanceof Interaction) {
+                                    if (highes == null) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction) entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                    if (highes.getY() < entity.getLocation().getY()) {
+                                        highes = entity.getLocation();
+                                        high = (Interaction) entity;
+                                        if (((ItemDisplay) entity.getPassengers().getFirst()).getItemStack() != null && ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta() != null)
+                                            bbase = ((ItemDisplay) entity.getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(base);
+                                    }
+                                }
+                            }
+                            if (highes != null) {
+                                if (bbase) {
+                                    eyeloc.setX(highes.getX());
+                                    eyeloc.setZ(highes.getZ());
+                                }
+                                eyeloc.setY(highes.getY() + 0.002 + high.getInteractionHeight());
+                                break;
+                            }
+                        } //getting eyeloc as pos where you want to place card
+                        eyeloc.setY(eyeloc.getY() + 0.005); //moving eyeloc up a bit, to not clip into anything
+                        eyeloc = moveToGridCenter(eyeloc);
+                        Location display_location = player.getLocation();
+                        display_location.setPitch(0);
+                        display_location.setYaw((Math.round(display_location.getYaw()/90)%4)*90);
+                        ItemDisplay display = player.getLocation().getWorld().spawn(display_location, ItemDisplay.class);
+                        display.setItemStack(offstack);
+                        if (offstack.getAmount() == 1){
+                            player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+                        } else {
+                            offstack.setAmount(offstack.getAmount()-1);
+                            player.getInventory().setItemInOffHand(offstack);
+                        }
+                        display.setTransformation(new Transformation(new Vector3f(0, 0, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), new AxisAngle4f(0.7853981634f, 0, 0, 0)));
+
+                        Interaction interaction = player.getLocation().getWorld().spawn(eyeloc, Interaction.class);
+                        interaction.addPassenger(display);
+                        interaction.setInteractionHeight(0.001f);
+                        interaction.setInteractionWidth(0.15f);
+                        interaction.setRotation(display_location.getYaw(), 0);
+                        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+                        return;
+                    }
+                }
+            }
+        } else {  // have item in both hands
+            // check if we have a bundle in off hand
+            for (NamespacedKey tag : offmeta.getPersistentDataContainer().getKeys()) {
+                if (tag.equals(bundle) && offmeta.getPersistentDataContainer().has(Bitems) && offmeta.getPersistentDataContainer().has(BIcount) && offmeta.getPersistentDataContainer().has(BIMcount)) {
+                    for (NamespacedKey main_tag : handmeta.getPersistentDataContainer().getKeys()) {
+                        if (main_tag.equals(card) && offmeta.getPersistentDataContainer().has(Cbundle)) {
+                            // main hand - card
+                            // offhand good bundle to place card in
+                            String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
+                            if (handmeta.getPersistentDataContainer().has(hcard)) {
+                                handmeta.setCustomModelData(handmeta.getPersistentDataContainer().get(hcard, PersistentDataType.INTEGER));
+                                handmeta.getPersistentDataContainer().remove(hcard);
+                                handstack.setItemMeta(handmeta);
+                            }
+
+                            ArrayList<ItemStack> items = getItemsFromBase64(sitems);
+                            if (handstack.getAmount() != 1) {
+                                ItemStack stack = handstack.clone();
+                                stack.setAmount(1);
+                                items.add(stack);
+                                handstack.setAmount(handstack.getAmount()-1);
+                                player.getInventory().setItemInMainHand(handstack);
+                            } else {
+                                items.add(handstack);
+                                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                            }
+
+                            String sitem = convertItemsToBase64(items);
+                            offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
+                            offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
+
+                            List<String> lore = offmeta.getLore();
+                            if (lore == null) {
+                                lore = new ArrayList<>();
+                                lore.add("§r§7При использовании выдает случайную карту");
+                                lore.add("§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
+                            } else {
+                                lore.set(1, "§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                            }
+                            offmeta.setLore(lore);
+                            offstack.setItemMeta(offmeta);
+                            return;
+                        }
+                        else if (main_tag.equals(chessp) && offmeta.getPersistentDataContainer().has(chessB)) {
+                            String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
+                            ArrayList<ItemStack> items = getItemsFromBase64(sitems);
+                            items.add(handstack);
+                            if (handstack.getAmount() != 1) {
+                                ItemStack stack = handstack.clone();
+                                stack.setAmount(1);
+                                items.add(stack);
+                                handstack.setAmount(handstack.getAmount()-1);
+                                player.getInventory().setItemInMainHand(handstack);
+                            } else {
+                                items.add(handstack);
+                                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                            }
+
+                            String sitem = convertItemsToBase64(items);
+                            offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
+                            offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
+                            List<String> lore = offmeta.getLore();
+                            if (lore == null) {
+                                lore = new ArrayList<>();
+                                lore.add("§r§7Шахматные фигуры можно ставить только на доску");
+                                lore.add("§r§7Количество фигур в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
+                            } else {
+                                lore.set(1, "§r§7Количество фигур в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                            }
+                            offmeta.setLore(lore);
+                            offstack.setItemMeta(offmeta);
+                            return;
+                        }
+                        else if (main_tag.equals(checker) && offmeta.getPersistentDataContainer().has(checkerB)) {
+                            String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
+                            ArrayList<ItemStack> items = getItemsFromBase64(sitems);
+                            if (handmeta.getCustomModelData()%2==1) {
+                                handmeta.setCustomModelData(handmeta.getCustomModelData()-1);
+                                handstack.setItemMeta(handmeta);
+                            }
+                            items.add(handstack);
+                            if (handstack.getAmount() != 1) {
+                                ItemStack stack = handstack.clone();
+                                stack.setAmount(1);
+                                items.add(stack);
+                                handstack.setAmount(handstack.getAmount()-1);
+                                player.getInventory().setItemInMainHand(handstack);
+                            } else {
+                                items.add(handstack);
+                                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                            }
+
+                            String sitem = convertItemsToBase64(items);
+                            offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
+                            offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
+                            List<String> lore = offmeta.getLore();
+                            if (lore == null) {
+                                lore = new ArrayList<>();
+                                lore.add("§r§7Шашки можно ставить только на доску");
+                                lore.add("§r§7Количество шашек в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
+                            } else {
+                                lore.set(1, "§r§7Количество шашек в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                            }
+                            offmeta.setLore(lore);
+                            offstack.setItemMeta(offmeta);
+                            return;
+
+                        }
+                        else if (main_tag.equals(domino) && offmeta.getPersistentDataContainer().has(dominoB)) {
+                            // main hand - card
+                            // offhand good bundle to place card in
+                            String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
+                            ArrayList<ItemStack> items = getItemsFromBase64(sitems);
+                            items.add(handstack);
+                            if (handstack.getAmount() != 1) {
+                                ItemStack stack = handstack.clone();
+                                stack.setAmount(1);
+                                items.add(stack);
+                                handstack.setAmount(handstack.getAmount()-1);
+                                player.getInventory().setItemInMainHand(handstack);
+                            } else {
+                                items.add(handstack);
+                                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                            }
+
+                            String sitem = convertItemsToBase64(items);
+                            offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
+                            offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
+                            List<String> lore = offmeta.getLore();
+                            if (lore == null) {
+                                lore = new ArrayList<>();
+                                lore.add("§r§7Выдает одну случайную домино");
+                                lore.add("§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
+                            } else {
+                                lore.set(1, "§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                            }
+                            offmeta.setLore(lore);
+                            offstack.setItemMeta(offmeta);
+                            return;
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractAtEntityEvent event) {
+        if (!event.getRightClicked().getType().equals(EntityType.INTERACTION)) {
+            return;
+        }
+        if (event.getRightClicked().getPersistentDataContainer().has(square)) {
+            //we are clicked on interaction with warped fungus, of nothing in main hand
+            if (event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && event.getPlayer().getInventory().getItemInMainHand().getItemMeta() != null && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(item)) {
+                //clicked with something in main
+
+                if (event.getRightClicked().getPassengers().isEmpty()) {
+                    // clicked on chess square
+                    if (event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(checker)) {
+                        ItemDisplay display = event.getPlayer().getLocation().getWorld().spawn(event.getPlayer().getLocation(), ItemDisplay.class);
+                        display.setRotation((Math.round(display.getLocation().getYaw() / 90 + 3) % 4) * 90, 0);
+                        if (event.getPlayer().isSneaking()) {
+                            ItemStack stack = event.getPlayer().getInventory().getItemInMainHand();
+                            ItemMeta meta = stack.getItemMeta();
+                            if (meta.getCustomModelData() % 2 == 0)
+                                meta.setCustomModelData(meta.getCustomModelData() + 1);
+                            else meta.setCustomModelData(meta.getCustomModelData() - 1);
+                            event.getPlayer().getInventory().getItemInMainHand().setItemMeta(meta);
+                        }
+                        display.setItemStack(event.getPlayer().getInventory().getItemInMainHand());
+                        event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        display.setTransformation(new Transformation(new Vector3f(0, 0.14f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.5f, 0.3f, 0.5f), new AxisAngle4f(0, 0, 0, 0)));
+                        event.getRightClicked().addPassenger(display);
+                        return;
+                    } else if (event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(chessp)) {
+                        ItemDisplay display = event.getPlayer().getLocation().getWorld().spawn(event.getPlayer().getLocation(), ItemDisplay.class);
+                        display.setRotation((Math.round(display.getLocation().getYaw() / 90) % 4) * 90, 0);
+                        display.setItemStack(event.getPlayer().getInventory().getItemInMainHand());
+                        event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        display.setTransformation(new Transformation(new Vector3f(0, display.getItemStack().getItemMeta().getCustomModelData() == 33210 || display.getItemStack().getItemMeta().getCustomModelData() == 33211 ? 0.18f : 0.23f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.5f, display.getItemStack().getItemMeta().getCustomModelData() == 33210 || display.getItemStack().getItemMeta().getCustomModelData() == 33211 ? 0.4f : 0.5f, 0.5f), new AxisAngle4f(0, 0, 0, 0)));
+                        event.getRightClicked().addPassenger(display);
+                        return;
+                    }
+                } else {
+                    // we have passengers, go fuck yourself
+                    Interaction interaction2 = (Interaction) event.getRightClicked();
+                    ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
+                    if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())) {
+                        event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), stack);
+                    }
+                    interaction2.getPassengers().getFirst().remove();
+                    return;
+                }
+            }  else {
+                if (!event.getRightClicked().getPassengers().isEmpty()) {
+                    // we have passengers, go fuck yourself
+                    Interaction interaction2 = (Interaction) event.getRightClicked();
+                    ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
+                    if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())) {
+                        event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), stack);
+                    }
+                    interaction2.getPassengers().getFirst().remove();
+                    return;
+                }
+            }
+        }
+        if (event.getPlayer().getInventory().getItemInOffHand().getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && event.getPlayer().getInventory().getItemInOffHand().getItemMeta() != null && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(item)) {
+            if (!event.getRightClicked().getPassengers().isEmpty() && event.getRightClicked().getPassengers().size() == 1) {
+                if (((ItemDisplay) event.getRightClicked().getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(card) && event.getPlayer().getInventory().getItemInOffHand().getItemMeta() != null
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(bundle)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Bitems)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Cbundle)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIcount)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIMcount)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER) >
+                        event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER)) {
+                    Interaction interaction = (Interaction) event.getRightClicked();
+                    ItemStack stack = ((ItemDisplay) interaction.getPassengers().getFirst()).getItemStack(); //display stack
+                    ItemMeta offmeta = event.getPlayer().getInventory().getItemInOffHand().getItemMeta();
                     String sitems = offmeta.getPersistentDataContainer().get(Bitems, PersistentDataType.STRING);
                     ArrayList<ItemStack> items = getItemsFromBase64(sitems);
-                    items.add(handstack);
-                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                    items.add(stack);
+                    interaction.getPassengers().getFirst().remove();
+                    interaction.remove();
                     String sitem = convertItemsToBase64(items);
                     offmeta.getPersistentDataContainer().set(Bitems, PersistentDataType.STRING, sitem);
                     offmeta.getPersistentDataContainer().set(BIcount, PersistentDataType.INTEGER, offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER) + 1);
                     List<String> lore = offmeta.getLore();
                     if (lore == null) {
                         lore = new ArrayList<>();
-                        lore.add("§r§7При использовании выдает случайную карту игры UNO");
+                        lore.add("§r§7При использовании выдает случайную карту");
                         lore.add("§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
                     } else {
                         lore.set(1, "§r§7Количество карт в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
                     }
                     offmeta.setLore(lore);
-                    offstack.setItemMeta(offmeta);
-
-                }
-
-                 */
-            }
-
-        }
-    }
-
-    @EventHandler
-    public void onInteract(PlayerInteractAtEntityEvent event){
-        if (event.getRightClicked().getType().equals(EntityType.INTERACTION) && (event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) || event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.AIR))) {
-            //we are clicked on interaction with warped fungus, of nothing in main hand
-
-            if (event.getRightClicked().getPersistentDataContainer().has(base)
-                    && event.getRightClicked().getPersistentDataContainer().has(square)
-                    && event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta() != null
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(item)
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(checker)){
-
-                if (event.getRightClicked().getPassengers().isEmpty()) {
-                    ItemDisplay display = event.getPlayer().getLocation().getWorld().spawn(event.getPlayer().getLocation(), ItemDisplay.class);
-                    display.setRotation((Math.round(display.getLocation().getYaw()/90+3)%4)*90, 0);
-                    if (event.getPlayer().isSneaking()){
-                        ItemStack stack = event.getPlayer().getInventory().getItemInMainHand();
-                        ItemMeta meta = stack.getItemMeta();
-                        if (meta.getCustomModelData()%2==0)meta.setCustomModelData(meta.getCustomModelData()+1);
-                        else meta.setCustomModelData(meta.getCustomModelData()-1);
-                        event.getPlayer().getInventory().getItemInMainHand().setItemMeta(meta);
+                    event.getPlayer().getInventory().getItemInOffHand().setItemMeta(offmeta);
+                    return;
+                } else if (((ItemDisplay) event.getRightClicked().getPassengers().getFirst()).getItemStack().getItemMeta().getPersistentDataContainer().has(domino) && event.getPlayer().getInventory().getItemInOffHand().getItemMeta() != null
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(bundle)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Bitems)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(dominoB)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIcount)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIMcount)
+                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER) >
+                        event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER)) {
+                    Interaction interaction = (Interaction) event.getRightClicked();
+                    ItemStack stack = ((ItemDisplay) interaction.getPassengers().getFirst()).getItemStack(); //display stack
+                    ItemMeta offmeta = event.getPlayer().getInventory().getItemInOffHand().getItemMeta();
+                    String sitems = offmeta.getPersistentDataContainer().get(Bitems, PersistentDataType.STRING);
+                    ArrayList<ItemStack> items = getItemsFromBase64(sitems);
+                    items.add(stack);
+                    interaction.getPassengers().getFirst().remove();
+                    interaction.remove();
+                    String sitem = convertItemsToBase64(items);
+                    offmeta.getPersistentDataContainer().set(Bitems, PersistentDataType.STRING, sitem);
+                    offmeta.getPersistentDataContainer().set(BIcount, PersistentDataType.INTEGER, offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER) + 1);
+                    List<String> lore = offmeta.getLore();
+                    if (lore == null) {
+                        lore = new ArrayList<>();
+                        lore.add("§r§7Выдает одну случайную домино");
+                        lore.add("§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
+                    } else {
+                        lore.set(1, "§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
                     }
-                    display.setItemStack(event.getPlayer().getInventory().getItemInMainHand());
-                    event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    display.setTransformation(new Transformation(new Vector3f(0, 0.14f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.5f, 0.3f, 0.5f), new AxisAngle4f(0, 0, 0, 0)));
-                    event.getRightClicked().addPassenger(display);
+                    offmeta.setLore(lore);
+                    event.getPlayer().getInventory().getItemInOffHand().setItemMeta(offmeta);
+                    return;
                 }
-                //onItemUse(new PlayerStatisticIncrementEvent(event.getPlayer(),Statistic.USE_ITEM,event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK),event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK)+1,Material.WARPED_FUNGUS_ON_A_STICK));
-                return;
-            }
-            else if (event.getRightClicked().getPersistentDataContainer().has(base) && event.getRightClicked().getPersistentDataContainer().has(square) && !event.getRightClicked().getPassengers().isEmpty()) {
-                Interaction interaction2 = (Interaction) event.getRightClicked();
-                ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
-                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
-                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
-                }
-                interaction2.getPassengers().getFirst().remove();
-                return;
-            }
-
-            if (event.getRightClicked().getPersistentDataContainer().has(base)
-                    && event.getRightClicked().getPersistentDataContainer().has(square)
-                    && event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta() != null
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(item)
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(chessp)){
-
-                if (event.getRightClicked().getPassengers().isEmpty()) {
-                    ItemDisplay display = event.getPlayer().getLocation().getWorld().spawn(event.getPlayer().getLocation(), ItemDisplay.class);
-                    display.setRotation((Math.round(display.getLocation().getYaw()/90)%4)*90, 0);
-                    display.setItemStack(event.getPlayer().getInventory().getItemInMainHand());
-                    event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    display.setTransformation(new Transformation(new Vector3f(0, display.getItemStack().getItemMeta().getCustomModelData() == 33210 || display.getItemStack().getItemMeta().getCustomModelData() == 33211 ? 0.18f :  0.23f, 0), new AxisAngle4f(0, 0, 0, 0), new Vector3f(0.5f, display.getItemStack().getItemMeta().getCustomModelData() == 33210 || display.getItemStack().getItemMeta().getCustomModelData() == 33211 ?  0.4f : 0.5f, 0.5f), new AxisAngle4f(0, 0, 0, 0)));
-                    event.getRightClicked().addPassenger(display);
-                }
-                //onItemUse(new PlayerStatisticIncrementEvent(event.getPlayer(),Statistic.USE_ITEM,event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK),event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK)+1,Material.WARPED_FUNGUS_ON_A_STICK));
-                return;
-            }
-            else if (event.getRightClicked().getPersistentDataContainer().has(base) && event.getRightClicked().getPersistentDataContainer().has(square) && !event.getRightClicked().getPassengers().isEmpty()) {
-                Interaction interaction2 = (Interaction) event.getRightClicked();
-                ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
-                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
-                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
-                }
-                interaction2.getPassengers().getFirst().remove();
-                return;
-            }
-
-            if (event.getRightClicked().getPersistentDataContainer().has(dice)) {
-                Interaction interaction2 = (Interaction) event.getRightClicked();
-                ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
-                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
-                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
-                }
-                interaction2.getPassengers().getFirst().remove();
-                interaction2.remove();
-                return;
-            }
-
-            if (!event.getRightClicked().getPassengers().isEmpty() && event.getRightClicked().getPassengers().size() == 1) {
-            if (event.getPlayer().getInventory().getItemInOffHand().getItemMeta() != null
-                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(bundle)
-                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Bitems)
-                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Cbundle)
-                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIcount)
-                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIMcount)
-                    && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
+                /*
                 Interaction interaction = (Interaction) event.getRightClicked();
                 ItemStack stack = ((ItemDisplay) interaction.getPassengers().getFirst()).getItemStack(); //display stack
                 ItemMeta offmeta = event.getPlayer().getInventory().getItemInOffHand().getItemMeta();
@@ -722,105 +1024,75 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                 offmeta.setLore(lore);
                 event.getPlayer().getInventory().getItemInOffHand().setItemMeta(offmeta);
                 return;
-            }
-
-                if (event.getPlayer().getInventory().getItemInOffHand().getItemMeta() != null
-                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(bundle)
-                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(Bitems)
-                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(dominoB)
-                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIcount)
-                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().has(BIMcount)
-                        && event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER) > event.getPlayer().getInventory().getItemInOffHand().getItemMeta().getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)) {
-                    Interaction interaction = (Interaction) event.getRightClicked();
-                    ItemStack stack = ((ItemDisplay) interaction.getPassengers().getFirst()).getItemStack(); //display stack
-                    ItemMeta offmeta = event.getPlayer().getInventory().getItemInOffHand().getItemMeta();
-                    String sitems = offmeta.getPersistentDataContainer().get(Bitems,PersistentDataType.STRING);
-                    ArrayList<ItemStack> items = getItemsFromBase64(sitems);
-                    items.add(stack);
-                    interaction.getPassengers().getFirst().remove();
-                    interaction.remove();
-                    String sitem = convertItemsToBase64(items);
-                    offmeta.getPersistentDataContainer().set(Bitems,PersistentDataType.STRING,sitem);
-                    offmeta.getPersistentDataContainer().set(BIcount,PersistentDataType.INTEGER,offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER)+1);
-                    List<String> lore = offmeta.getLore();
-                    if (lore == null) {
-                        lore = new ArrayList<>();
-                        lore.add("§r§7Выдает одну случайную домино");
-                        lore.add("§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount,PersistentDataType.INTEGER),offmeta.getPersistentDataContainer().get(BIMcount,PersistentDataType.INTEGER)));
-                    } else {
-                        lore.set(1, "§r§7Количество домино в мешочке: §6%s/%s".formatted(offmeta.getPersistentDataContainer().get(BIcount, PersistentDataType.INTEGER), offmeta.getPersistentDataContainer().get(BIMcount, PersistentDataType.INTEGER)));
-                    }
-                    offmeta.setLore(lore);
-                    event.getPlayer().getInventory().getItemInOffHand().setItemMeta(offmeta);
-                    return;
                 }
+            */
 
-
-                //we are not holding correct bundle
+            }
+        } else {
 
             if (event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.WARPED_FUNGUS_ON_A_STICK)
                     && event.getPlayer().getInventory().getItemInMainHand().getItemMeta() != null
-                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(item) ) {
-                    //&& event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(card)) {
-                onItemUse(new PlayerStatisticIncrementEvent(event.getPlayer(),Statistic.USE_ITEM,event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK),event.getPlayer().getStatistic(Statistic.USE_ITEM,Material.WARPED_FUNGUS_ON_A_STICK)+1,Material.WARPED_FUNGUS_ON_A_STICK));
+                    && event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(item)) {
+                //&& event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(card)) {
+                onItemUse(new PlayerStatisticIncrementEvent(event.getPlayer(), Statistic.USE_ITEM, event.getPlayer().getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK), event.getPlayer().getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) + 1, Material.WARPED_FUNGUS_ON_A_STICK));
                 return;
             }
 
-
-
-            if (event.getPlayer().isSneaking()) {
-                Interaction interaction = (Interaction) event.getRightClicked();
-                ItemDisplay display = ((ItemDisplay) interaction.getPassengers().getFirst());
-                if (display.getItemStack() != null && display.getItemStack().getItemMeta() != null) {
-                    if (display.getItemStack().getItemMeta().getPersistentDataContainer().has(rotatable) && !display.getItemStack().getItemMeta().getPersistentDataContainer().has(domino)) {
-                        Location loc = display.getLocation();
-                        loc.setPitch(loc.getPitch() == 0 ? 180 : 0);
-                        Transformation transformation = display.getTransformation();
-                        transformation.getTranslation().y = -transformation.getTranslation().y;
-                        display.setTransformation(transformation);
-                        display.teleport(loc);
-                        interaction.addPassenger(display);
-                        event.setCancelled(true);
-                        return;
-                    } else if (display.getItemStack().getItemMeta().getPersistentDataContainer().has(domino)) {
-                        Location loc = display.getLocation();
-                        loc.setYaw(loc.getYaw()+90);
-                        display.teleport(loc);
-                        interaction.addPassenger(display);
-                        return;
-                    }
-                }
-            }
-            Interaction interaction2 = (Interaction) event.getRightClicked();
-            ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
-            if (stack.getItemMeta().getPersistentDataContainer().has(board)) {
-                for (Entity entity : interaction2.getLocation().getWorld().getNearbyEntities(interaction2.getBoundingBox().expand(0,0.2,0))){
-                    if (entity.equals(interaction2)) continue;
-                    for (Entity pasenger : entity.getPassengers()) {
-                        if (pasenger.getType().equals(EntityType.ITEM_DISPLAY) && ((ItemDisplay) pasenger).getItemStack()!= null){
-                            pasenger.getLocation().getWorld().dropItemNaturally(pasenger.getLocation(),((ItemDisplay) pasenger).getItemStack());
+            if (!event.getRightClicked().getPassengers().isEmpty() && event.getRightClicked().getPassengers().size() == 1) {
+                if (event.getPlayer().isSneaking()) {
+                    Interaction interaction = (Interaction) event.getRightClicked();
+                    ItemDisplay display = ((ItemDisplay) interaction.getPassengers().getFirst());
+                    if (display.getItemStack() != null && display.getItemStack().getItemMeta() != null) {
+                        if (display.getItemStack().getItemMeta().getPersistentDataContainer().has(rotatable) && !display.getItemStack().getItemMeta().getPersistentDataContainer().has(domino)) {
+                            Location loc = display.getLocation();
+                            loc.setPitch(loc.getPitch() == 0 ? 180 : 0);
+                            Transformation transformation = display.getTransformation();
+                            transformation.getTranslation().y = -transformation.getTranslation().y;
+                            display.setTransformation(transformation);
+                            display.teleport(loc);
+                            interaction.addPassenger(display);
+                            return;
+                        } else if (display.getItemStack().getItemMeta().getPersistentDataContainer().has(domino)) {
+                            Location loc = display.getLocation();
+                            loc.setYaw(loc.getYaw() + 90);
+                            display.teleport(loc);
+                            interaction.addPassenger(display);
+                            return;
                         }
                     }
-                    entity.remove();
                 }
-                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
-                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
+                Interaction interaction2 = (Interaction) event.getRightClicked();
+                ItemStack stack = ((ItemDisplay) interaction2.getPassengers().getFirst()).getItemStack();
+                if (stack.getItemMeta().getPersistentDataContainer().has(board)) {
+                    for (Entity entity : interaction2.getLocation().getWorld().getNearbyEntities(interaction2.getBoundingBox().expand(0, 0.2, 0))) {
+                        if (entity.equals(interaction2)) continue;
+                        if (!(entity.getType() == EntityType.INTERACTION || entity.getType() == EntityType.ITEM_DISPLAY))
+                            continue;
+                        for (Entity pasenger : entity.getPassengers()) {
+                            if (pasenger.getType().equals(EntityType.ITEM_DISPLAY) && ((ItemDisplay) pasenger).getItemStack() != null) {
+                                pasenger.getLocation().getWorld().dropItemNaturally(pasenger.getLocation(), ((ItemDisplay) pasenger).getItemStack());
+                            }
+                        }
+                        entity.remove();
+                    }
+                    if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())) {
+                        event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), stack);
+                    }
+                    interaction2.remove();
+                    return;
                 }
-                interaction2.remove();
-                return;
-            }
-                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())){
-                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(),stack);
+                if (!event.getPlayer().getInventory().addItem(stack).equals(new HashMap<>())) {
+                    event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), stack);
                 }
-            interaction2.getPassengers().getFirst().remove();
-            interaction2.remove();
-
+                interaction2.getPassengers().getFirst().remove();
+                if (!interaction2.getPersistentDataContainer().has(square)) interaction2.remove();
             }
         }
     }
 
 
-    public void give_card_from_bundle(ItemStack handstack, ItemMeta handmeta, Player player){
+
+    public void give_card_from_bundle(ItemStack handstack, ItemMeta handmeta, Player player) {
         String sitems = handmeta.getPersistentDataContainer().get(Bitems, PersistentDataType.STRING);
         ArrayList<ItemStack> items = getItemsFromBase64(sitems);
         if (!items.isEmpty()) {
@@ -865,6 +1137,30 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
     public Location moveToGridCenter(Location location) {
         // Size of each cell in the grid
         double cellSize = 0.025;
+
+        // Get the coordinates within the block (0.0 to 1.0)
+        double localX = location.getX() - location.getBlockX();
+        double localZ = location.getZ() - location.getBlockZ();
+
+        // Determine the cell indices within the 10x10 grid
+        int cellX = (int) (localX / cellSize);
+        int cellZ = (int) (localZ / cellSize);
+
+        // Calculate the center of the cell
+        double centerX = cellX * cellSize + (cellSize / 2.0);
+        double centerZ = cellZ * cellSize + (cellSize / 2.0);
+
+        // Create a new location at the center of the cell
+        return new Location(
+                location.getWorld(),
+                location.getBlockX() + centerX,
+                location.getY(),
+                location.getBlockZ() + centerZ
+        );
+    }
+    public Location moveToChipCenter(Location location) {
+        // Size of each cell in the grid
+        double cellSize = 0.25; // 1/4 of a block?
 
         // Get the coordinates within the block (0.0 to 1.0)
         double localX = location.getX() - location.getBlockX();
@@ -953,7 +1249,6 @@ public final class TablePlays extends JavaPlugin implements Listener { //, Comma
                 Player player = (Player) sender;
                 ItemStack stack = player.getInventory().getItemInMainHand();
                 String items = convertItemsToBase64(new ArrayList<>(List.of(stack)));
-                System.out.println(items);
                 player.getInventory().addItem(getItemsFromBase64(items).getFirst());
             } else {
                 Player player = (Player) sender;
