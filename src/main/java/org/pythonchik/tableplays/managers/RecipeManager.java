@@ -11,14 +11,14 @@ import org.bukkit.plugin.Plugin;
 public class RecipeManager {
     public static void init(Plugin plugin){
         return; // don't need now, will do crafts later
-        cards52(plugin);
-        cards36(plugin);
-        cards54(plugin);
-        dice(plugin);
-        checkers(plugin);
-        board(plugin);
-        chess(plugin);
-        domino(plugin);
+        //cards52(plugin);
+        //cards36(plugin);
+        //cards54(plugin);
+        //dice(plugin);
+        //checkers(plugin);
+        //board(plugin);
+        //chess(plugin);
+        //domino(plugin);
     }
     private static void cards52(Plugin plugin){
         ItemStack final_item = Util.getItemsFromBase64(bigdata.get52bundle()).getFirst();
