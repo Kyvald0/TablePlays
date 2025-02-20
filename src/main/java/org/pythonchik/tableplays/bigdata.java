@@ -1,5 +1,6 @@
 package org.pythonchik.tableplays;
 
+// as much as I love this file probably will be removed soon
 public class bigdata {
 
     /**

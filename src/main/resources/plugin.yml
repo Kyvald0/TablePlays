@@ -2,10 +2,8 @@ name: TablePlays
 version: '${version}'
 main: org.pythonchik.tableplays.TablePlays
 api-version: '1.21'
-#commands:
-#  gimme:
-#    permission: op
-#  bundle:
-#    permission: op
-#  base64:
-#    permission: op
+commands:
+  gimme:
+    permission: op
+  base64:
+    permission: op

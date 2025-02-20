@@ -1,0 +1,31 @@
+# available languages: 'ru', 'en', 'what'.
+# or you can just type any string and create file `{x}.yml` where {x} is whatever you typed in here
+lang: ru
+
+# if true some items and/or big tags will be saved in the `saved.yml` file
+# this is not yet working, I hope I will do this feature and change this text, or otherwise you may try to use it, but it may do nothing
+allow-files: false
+
+
+#DO NOT EDIT UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING
+items:
+  dice:
+    hitbox:
+      - 0.35
+      - 0.35
+    transformation:
+      - 0
+      - 0.17
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0.4
+      - 0.4
+      - 0.4
+      - 0.7853981634
+      - 0
+      - 0
+      - 0
+    basecmd: 33400

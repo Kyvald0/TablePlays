@@ -1,13 +1,16 @@
-package org.pythonchik.tableplays;
+package org.pythonchik.tableplays.managers;
 
+import org.pythonchik.tableplays.bigdata;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.Plugin;
 
 public class RecipeManager {
     public static void init(Plugin plugin){
+        return; // don't need now, will do crafts later
         cards52(plugin);
         cards36(plugin);
         cards54(plugin);
@@ -18,7 +21,8 @@ public class RecipeManager {
         domino(plugin);
     }
     private static void cards52(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards52bundle"),TablePlays.getItemsFromBase64(bigdata.get52bundle()).getFirst());
+        ItemStack final_item = Util.getItemsFromBase64(bigdata.get52bundle()).getFirst();
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards52bundle"), final_item);
         recipe.shape(
                 "PPP",
                 "RSB",
@@ -32,7 +36,7 @@ public class RecipeManager {
         Bukkit.addRecipe(recipe);
     }
     private static void cards54(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards54bundle"),TablePlays.getItemsFromBase64(bigdata.get54bundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards54bundle"),Util.getItemsFromBase64(bigdata.get54bundle()).getFirst());
         recipe.shape(
                 "PPP",
                 "RLB",
@@ -46,7 +50,7 @@ public class RecipeManager {
         Bukkit.addRecipe(recipe);
     }
     private static void cards36(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards56bundle"),TablePlays.getItemsFromBase64(bigdata.get36bundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards56bundle"),Util.getItemsFromBase64(bigdata.get36bundle()).getFirst());
         recipe.shape(
                 "PPP",
                 "BSR",
@@ -60,7 +64,7 @@ public class RecipeManager {
         Bukkit.addRecipe(recipe);
     }
     private static void dice(Plugin plugin) {
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "dice"), TablePlays.getItemsFromBase64(bigdata.getDice()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "dice"), Util.getItemsFromBase64(bigdata.getDice()).getFirst());
         recipe.shape(
                 " W ",
                 "ABA",
@@ -73,7 +77,7 @@ public class RecipeManager {
         Bukkit.addRecipe(recipe);
     }
     private static void checkers(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"checkersbundle"),TablePlays.getItemsFromBase64(bigdata.getCheckersBundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"checkersbundle"),Util.getItemsFromBase64(bigdata.getCheckersBundle()).getFirst());
         recipe.shape(
                 " Q ",
                 "YSB",
@@ -87,7 +91,7 @@ public class RecipeManager {
         Bukkit.addRecipe(recipe);
     }
     private static void board(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"board"),TablePlays.getItemsFromBase64(bigdata.getBoard()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"board"),Util.getItemsFromBase64(bigdata.getBoard()).getFirst());
         recipe.shape(
                 "BS",
                 "SB"
@@ -97,7 +101,7 @@ public class RecipeManager {
         Bukkit.addRecipe(recipe);
     }
     private static void chess(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"chessbundle"),TablePlays.getItemsFromBase64(bigdata.getChessBundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"chessbundle"),Util.getItemsFromBase64(bigdata.getChessBundle()).getFirst());
         recipe.shape(
                 "WQB",
                 "WSB",
@@ -111,7 +115,7 @@ public class RecipeManager {
         Bukkit.addRecipe(recipe);
     }
     private static void domino(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"dominobundle"),TablePlays.getItemsFromBase64(bigdata.getDominoBundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"dominobundle"),Util.getItemsFromBase64(bigdata.getDominoBundle()).getFirst());
         recipe.shape(
                 " M ",
                 "WSB",
