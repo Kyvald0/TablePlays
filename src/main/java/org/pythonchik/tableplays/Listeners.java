@@ -1,5 +1,6 @@
 package org.pythonchik.tableplays;
 
+import org.bukkit.util.Vector;
 import org.pythonchik.tableplays.managers.Util;
 import org.pythonchik.tableplays.managers.Util.*;
 import org.pythonchik.tableplays.managers.ValuesManager;
@@ -22,6 +23,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class Listeners implements Listener {
@@ -102,10 +104,10 @@ public class Listeners implements Listener {
         //now that we have all active tags I really need to handle only edge cases, like 2 items that _should_ work together, and leave the rest to the function I'm yet to create
 
         //now that we have handled the edge cases - throw this shit into this function ->
-        handle_action(player, currentTag, currentTag.contains(ActionTag.MAIN_HAND) ? mainStack : null, currentTag.contains(ActionTag.LEFT_HAND) ? offStack : null, (Interaction) event.getRightClicked());
+        handle_action(player, currentTag, currentTag.contains(ActionTag.MAIN_HAND) ? mainStack : null, currentTag.contains(ActionTag.LEFT_HAND) ? offStack : null, (Interaction) event.getRightClicked(), event.getClickedPosition());
     }
 
-    public static void handle_action(Player player, ActionTagSet currentTag, ItemStack mainStack, ItemStack offStack, Interaction interaction) {
+    public static void handle_action(Player player, ActionTagSet currentTag, ItemStack mainStack, ItemStack offStack, Interaction interaction, Object... args) {
         //this should be impossible, but we can never know
         if (mainStack == null && offStack == null && interaction == null) {
             return;
@@ -126,8 +128,8 @@ public class Listeners implements Listener {
             for (String currentCheck : data) {
                 String[] split = currentCheck.split(":");
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
-                    ArrayList<String> modifiers = Util.getModifiers(groundStack, split[1]);
-                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction);
+                    ArrayList<String> modifiers = Util.getModifiers(groundStack, currentTag.toString());
+                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args);
                     return;
                 }
             }
@@ -138,8 +140,8 @@ public class Listeners implements Listener {
             for (String currentCheck : data) {
                 String[] split = currentCheck.split(":");
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
-                    ArrayList<String> modifiers = Util.getModifiers(mainStack, split[1]);
-                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction);
+                    ArrayList<String> modifiers = Util.getModifiers(mainStack, currentTag.toString());
+                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args);
                     return;
                 }
             }
@@ -150,8 +152,8 @@ public class Listeners implements Listener {
             for (String currentCheck : data) {
                 String[] split = currentCheck.split(":");
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
-                    ArrayList<String> modifiers = Util.getModifiers(offStack, split[1]);
-                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction);
+                    ArrayList<String> modifiers = Util.getModifiers(offStack, currentTag.toString());
+                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args);
                     return;
                 }
             }
@@ -159,7 +161,7 @@ public class Listeners implements Listener {
     }
     //make a lot of functions to handle actions with card, maybe transport here also some params, maybe in hashmap format, but how to get the obj?
 
-    public static boolean executeAction(Player player, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction) {
+    public static boolean executeAction(Player player, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Object... args) {
         switch (action) {
             //place X down, main hand
             case "PLACE_MAIN" -> {
@@ -196,7 +198,7 @@ public class Listeners implements Listener {
                 applyInteractionModifiers(spawned_interaction, modifiers);
 
                 display.addPassenger(spawned_interaction);
-                break;
+                return false;
             }
             //place X down, left hand
             case "PLACE_LEFT" -> {
@@ -233,11 +235,110 @@ public class Listeners implements Listener {
                 applyInteractionModifiers(spawned_interaction, modifiers);
 
                 display.addPassenger(spawned_interaction);
-                break;
+                return false;
             }
-            // place X on top of item, main hand
+            // place X on top of an item, main hand
             case "PLACE_TOP_MAIN" -> {
+                if (args.length == 0 || interaction == null) {
+                    return true;
+                }
+                Vector clicked_pos = (Vector) args[0];
+                clicked_pos.setY(interaction.getInteractionHeight()+0.001); // offset for not clipping
+                Location spawn_loc = interaction.getLocation();
+                spawn_loc.setYaw(player.getLocation().getYaw());
+                for (String modifier : modifiers) {
+                    if (modifier.toUpperCase().equals("ALIGN")) {
+                        clicked_pos.setX(0);
+                        clicked_pos.setZ(0);
+                    }
+                }
 
+                spawn_loc.add(clicked_pos);
+                Interaction spawned_interaction = player.getWorld().spawn(spawn_loc, Interaction.class);
+                ItemDisplay display = player.getWorld().spawn(spawn_loc, ItemDisplay.class);
+                spawned_interaction.getPersistentDataContainer().set(ItemTags.Entity.getValue(), PersistentDataType.BOOLEAN, true);
+                display.getPersistentDataContainer().set(ItemTags.Entity.getValue(), PersistentDataType.BOOLEAN, true);
+                List<Float> hitbox = ValuesManager.getItemHitbox(mainStack); // should return 2 values, width and height, in that order
+                if (hitbox != null) {
+                    spawned_interaction.setInteractionWidth(hitbox.getFirst());
+                    spawned_interaction.setInteractionHeight(hitbox.getLast());
+                }
+                //item handling
+                ItemStack single_item = mainStack.clone();
+
+                single_item = applyItemModifiers(single_item, modifiers);
+
+                single_item.setAmount(1);
+                display.setItemStack(single_item);
+
+                if (player.getInventory().getItemInMainHand().getAmount() == 1) {
+                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                } else {
+                    player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount()-1);
+                }
+
+                //correct size and shit for the model, data driven
+                display.setTransformation(ValuesManager.getTransformation(single_item));
+
+                //make them aligned to the ground
+                display.setRotation(display.getLocation().getYaw(),0);
+
+                applyInteractionModifiers(spawned_interaction, modifiers);
+
+                display.addPassenger(spawned_interaction);
+                return false;
+            }
+            // place X on top of an item, left hand
+            case "PLACE_TOP_LEFT" -> {
+                if (args.length == 0 || interaction == null) {
+                    return true;
+                }
+                Vector clicked_pos = (Vector) args[0];
+                clicked_pos.setY(interaction.getInteractionHeight()+0.001); // offset for not clipping
+                Location spawn_loc = interaction.getLocation();
+                spawn_loc.setYaw(player.getLocation().getYaw());
+                //TODO maybe move to a separate function for location? maybe uniform all modifiers and just pass Object? idk someone help me :/
+                for (String modifier : modifiers) {
+                    if (modifier.toUpperCase().equals("ALIGN")) {
+                        clicked_pos.setX(0);
+                        clicked_pos.setZ(0);
+                    }
+                }
+
+                spawn_loc.add(clicked_pos);
+                Interaction spawned_interaction = player.getWorld().spawn(spawn_loc, Interaction.class);
+                ItemDisplay display = player.getWorld().spawn(spawn_loc, ItemDisplay.class);
+                spawned_interaction.getPersistentDataContainer().set(ItemTags.Entity.getValue(), PersistentDataType.BOOLEAN, true);
+                display.getPersistentDataContainer().set(ItemTags.Entity.getValue(), PersistentDataType.BOOLEAN, true);
+                List<Float> hitbox = ValuesManager.getItemHitbox(offStack); // should return 2 values, width and height, in that order
+                if (hitbox != null) {
+                    spawned_interaction.setInteractionWidth(hitbox.getFirst());
+                    spawned_interaction.setInteractionHeight(hitbox.getLast());
+                }
+                //item handling
+                ItemStack single_item = offStack.clone();
+
+                single_item = applyItemModifiers(single_item, modifiers);
+
+                single_item.setAmount(1);
+                display.setItemStack(single_item);
+
+                if (player.getInventory().getItemInOffHand().getAmount() == 1) {
+                    player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+                } else {
+                    player.getInventory().getItemInOffHand().setAmount(player.getInventory().getItemInOffHand().getAmount()-1);
+                }
+
+                //correct size and shit for the model, data driven
+                display.setTransformation(ValuesManager.getTransformation(single_item));
+
+                //make them aligned to the ground
+                display.setRotation(display.getLocation().getYaw(),0);
+
+                applyInteractionModifiers(spawned_interaction, modifiers);
+
+                display.addPassenger(spawned_interaction);
+                return false;
             }
             //TODO make more modes
 
@@ -260,6 +361,7 @@ public class Listeners implements Listener {
 
     }
 
+    //I will later replace it with some kind of modifier manager, for future me I have the chat in ChatGPT about the modifier stuff from 21.02.2025
     public static ItemStack applyItemModifiers(ItemStack stack, ArrayList<String> modifiers) {
         for (String modifier : modifiers) {
             if (modifier.toUpperCase().matches("RCMDP[123456789]\\d*")) {
@@ -285,5 +387,12 @@ public class Listeners implements Listener {
         return interaction;
     }
 
+    public static Location applyLocationModifiers(Location location, ArrayList<String> modifiers) {
+        //TODO this
+        for (String modifier : modifiers) {
+            // grid?
+        }
+        return location;
+    }
 
 }

@@ -1,6 +1,7 @@
 package org.pythonchik.tableplays;
 
 import org.pythonchik.tableplays.managers.RecipeManager;
+import org.pythonchik.tableplays.managers.translationManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -15,7 +16,7 @@ public final class TablePlays extends JavaPlugin implements Listener {
 
     public static Plugin instance;
     public static FileConfiguration config = null;
-    public static FileConfiguration translations = null;
+    private static FileConfiguration translations = null;
     public static boolean isDevAndIsMiniking1000TheBestPlayerInHisMind = true;
     public static Plugin getPlugin() {
         return instance;
@@ -25,6 +26,7 @@ public final class TablePlays extends JavaPlugin implements Listener {
     public void onEnable() {
         instance = this;
         loadConfig();
+        new translationManager(translations);
         Bukkit.getServer().getPluginManager().registerEvents(new Listeners(), this);
         RecipeManager.init(this);
         if (isDevAndIsMiniking1000TheBestPlayerInHisMind) {
@@ -38,11 +40,19 @@ public final class TablePlays extends JavaPlugin implements Listener {
 
 
     public void loadConfig() {
+        if (isDevAndIsMiniking1000TheBestPlayerInHisMind) {
+            saveResource("config.yml", true);
+            File configFile = new File(getDataFolder(), "config.yml");
+            config = YamlConfiguration.loadConfiguration(configFile);
+            saveResource("ru.yml", true);
+            File translFile = new File(getDataFolder(),  "ru.yml");
+            translations = YamlConfiguration.loadConfiguration(translFile);
+            return;
+        }
         File configFile = new File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
             saveResource("config.yml", false);
         }
-        if (isDevAndIsMiniking1000TheBestPlayerInHisMind) saveResource("config.yml", true);
         config = YamlConfiguration.loadConfiguration(configFile);
         if (config.getString("lang") != null) {
             File translFile = new File(getDataFolder(),  config.getString("lang") + ".yml");

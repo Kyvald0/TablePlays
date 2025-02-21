@@ -10,11 +10,10 @@ import org.bukkit.plugin.Plugin;
 
 public class RecipeManager {
     public static void init(Plugin plugin){
-        return; // don't need now, will do crafts later
         //cards52(plugin);
         //cards36(plugin);
         //cards54(plugin);
-        //dice(plugin);
+        dice(plugin);
         //checkers(plugin);
         //board(plugin);
         //chess(plugin);
@@ -64,7 +63,8 @@ public class RecipeManager {
         Bukkit.addRecipe(recipe);
     }
     private static void dice(Plugin plugin) {
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "dice"), Util.getItemsFromBase64(bigdata.getDice()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "dice"), ItemCreator.getDice());
+        //TODO make craft configurable? how?
         recipe.shape(
                 " W ",
                 "ABA",

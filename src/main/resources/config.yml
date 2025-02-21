@@ -29,3 +29,24 @@ items:
       - 0
       - 0
     basecmd: 33400
+    max_stack: 4
+  card:
+    hitbox:
+      - 0.35
+      - 0.001
+    transformation:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 1
+      - 1
+      - 1
+      - 0.7853981634
+      - 0
+      - 0
+      - 0
+    basecmd: 29999

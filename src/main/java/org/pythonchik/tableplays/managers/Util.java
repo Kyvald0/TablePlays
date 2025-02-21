@@ -94,7 +94,7 @@ public class Util {
         }
 
         public boolean containsAny(ActionTag... tags) {
-            //TODO implement BTrees to improve 0.0001 MS spent on this function
+            //TOD0 implement BTrees to improve 0.0001 MS spent on this function
             //(I'm not doing this shit, it's a joke)
             for (ActionTag tag : tags) {
                 if (contains(tag)) return true;
@@ -116,6 +116,7 @@ public class Util {
         Item(new NamespacedKey(TablePlays.getPlugin(), "item")), // boolean, used only in .has
         Entity(new NamespacedKey(TablePlays.getPlugin(), "entity")), // boolean, used only in .has
         Type(new NamespacedKey(TablePlays.getPlugin(), "type")), // string, type of the item/entity
+        SubType(new NamespacedKey(TablePlays.getPlugin(), "subtype")), // integer, add this number to the config base to get a variant of current type, for example cards or dominos
         Actions(new NamespacedKey(TablePlays.getPlugin(), "actions")), //string, actions described in another file
         Modifiers(new NamespacedKey(TablePlays.getPlugin(), "modifiers")), //string, all modifiers applied to the actions
 
@@ -198,7 +199,7 @@ public class Util {
         return eyeloc;
     }
 
-    public static ArrayList<String> getModifiers(ItemStack stack, String action) {
+    public static ArrayList<String> getModifiers(ItemStack stack, String action) { // action here is number from ActionTagSet.toString()
         String[] modifs = (stack.getItemMeta().getPersistentDataContainer().get(ItemTags.Modifiers.getValue(), PersistentDataType.STRING)).split(",");
         ArrayList<String> modifiers = new ArrayList<>();
         for (String modif : modifs) {
