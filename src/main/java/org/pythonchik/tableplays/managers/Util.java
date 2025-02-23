@@ -113,39 +113,16 @@ public class Util {
     }
 
     public enum ItemTags {
-        Item(new NamespacedKey(TablePlays.getPlugin(), "item")), // boolean, used only in .has
+        Item(new NamespacedKey(TablePlays.getPlugin(), "item")), // string, type of the item/entity
         Entity(new NamespacedKey(TablePlays.getPlugin(), "entity")), // boolean, used only in .has
-        Type(new NamespacedKey(TablePlays.getPlugin(), "type")), // string, type of the item/entity
         SubType(new NamespacedKey(TablePlays.getPlugin(), "subtype")), // integer, add this number to the config base to get a variant of current type, for example cards or dominos
         Actions(new NamespacedKey(TablePlays.getPlugin(), "actions")), //string, actions described in another file
         Modifiers(new NamespacedKey(TablePlays.getPlugin(), "modifiers")), //string, all modifiers applied to the actions
+        ExtraData(new NamespacedKey(TablePlays.getPlugin(), "extra")), // planned to use for things like hcard, or simular
 
-        //all next probably redundent as I have type now
-        Card(new NamespacedKey(TablePlays.getPlugin(), "card")),
-        Board(new NamespacedKey(TablePlays.getPlugin(), "board")),
-        Bundle(new NamespacedKey(TablePlays.getPlugin(), "bundle")),
-        Checker(new NamespacedKey(TablePlays.getPlugin(), "checker")),
-        ChessPiece(new NamespacedKey(TablePlays.getPlugin(), "chessp")),
-        Domino(new NamespacedKey(TablePlays.getPlugin(), "domino")),
-        Chip(new NamespacedKey(TablePlays.getPlugin(), "chip")),
-        Square(new NamespacedKey(TablePlays.getPlugin(), "square")),
-        //up to this point
-
-        // all below are bools with no effect from the value
-        Flippable(new NamespacedKey(TablePlays.getPlugin(), "flippable")), // if present - item may be flipped upside down
-        Rotatable(new NamespacedKey(TablePlays.getPlugin(), "rotatable")), // if present - item may be rotated 90 degrees
-        Base(new NamespacedKey(TablePlays.getPlugin(), "base")),
-        Hcard(new NamespacedKey(TablePlays.getPlugin(), "hcard")),
-        RandomFace(new NamespacedKey(TablePlays.getPlugin(), "random_face")),
-
-        Bundle_domino(new NamespacedKey(TablePlays.getPlugin(), "bundle_domino")),
-        Bundle_cards(new NamespacedKey(TablePlays.getPlugin(), "bundle_card")),
-        Bundle_chess(new NamespacedKey(TablePlays.getPlugin(), "bundle_chess")),
-        Bundle_checkers(new NamespacedKey(TablePlays.getPlugin(), "bundle_checker")),
-        Bundle_randO(new NamespacedKey(TablePlays.getPlugin(), "bundle_rando")),
-        Bundle_items(new NamespacedKey(TablePlays.getPlugin(), "bundle_items")),
-        Bundle_Stype(new NamespacedKey(TablePlays.getPlugin(), "bundle_stype")),
-        Bundle_max_count(new NamespacedKey(TablePlays.getPlugin(), "bundle_maxcount"));
+        Bundle(new NamespacedKey(TablePlays.getPlugin(), "bundle")), // string, bundle accepted types, e.g. what types of item may be placed inside.
+        BundleMeta(new NamespacedKey(TablePlays.getPlugin(), "bundlemeta")), // string of literal of "data", "uuid", then ";" with number, maximum items in the bundle. regex: (data|uuid);[123456789]\d*
+        BundleData(new NamespacedKey(TablePlays.getPlugin(), "bundledata")); // string, the uuid if save is server side, or base64 string with arraylist of item if saved localy;
 
         private final NamespacedKey value;
 
@@ -157,6 +134,19 @@ public class Util {
             return value;
         }
 
+    }
+
+    public enum ItemTypes {
+        Dice("dice"),
+        Card("card"), //TODO switch to this, and have dice be pick up from here
+        Bundle("bundle");
+        private String value;
+        ItemTypes(String value) {
+            this.value = value;
+        }
+        public String getValue() {
+            return value;
+        }
     }
 
     public static ArrayList<ItemStack> getItemsFromBase64(String baseString) {

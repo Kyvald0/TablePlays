@@ -2,16 +2,11 @@ package org.pythonchik.tableplays;
 
 import org.pythonchik.tableplays.managers.ItemCreator;
 import org.pythonchik.tableplays.managers.Util;
-import org.pythonchik.tableplays.managers.Util.ItemTags;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
-import org.pythonchik.tableplays.managers.ValuesManager;
 
 import java.util.ArrayList;
 import java.util.List;

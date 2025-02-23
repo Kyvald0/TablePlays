@@ -1,13 +1,12 @@
 package org.pythonchik.tableplays;
 
+import org.bukkit.*;
 import org.bukkit.util.Vector;
+import org.pythonchik.tableplays.managers.BundleManager;
+import org.pythonchik.tableplays.managers.ModifierManager;
 import org.pythonchik.tableplays.managers.Util;
 import org.pythonchik.tableplays.managers.Util.*;
 import org.pythonchik.tableplays.managers.ValuesManager;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Statistic;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Interaction;
@@ -18,15 +17,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerStatisticIncrementEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.pythonchik.tableplays.managers.modifiers.ModifierContext;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class Listeners implements Listener {
+
+    private static HashMap<Player, Long> ItemUses = new HashMap<>();
 
     @EventHandler
     public void OnItemUse(PlayerStatisticIncrementEvent event) {
@@ -39,6 +37,12 @@ public class Listeners implements Listener {
         ItemStack mainStack = player.getInventory().getItemInMainHand();
         ItemStack offStack = player.getInventory().getItemInOffHand();
 
+        //prevent double-calling from holding an item in 2 hands
+        if (System.currentTimeMillis() - ItemUses.getOrDefault(player, 0L) < 1000/Bukkit.getServer().getServerTickManager().getTickRate()) {
+            event.setCancelled(true);
+            return;
+        }
+
         //from what hand are we doing this?
         if (mainStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && mainStack.getItemMeta() != null && mainStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue())
             && !(offStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && offStack.getItemMeta() != null && offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()))) {
@@ -46,15 +50,22 @@ public class Listeners implements Listener {
         } else if (!(mainStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && mainStack.getItemMeta() != null && mainStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()))
                 && offStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && offStack.getItemMeta() != null && offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue())) {
             currentTag.add(ActionTag.LEFT_HAND);
+        } else if (!(mainStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && mainStack.getItemMeta() != null && mainStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()))
+                && !(offStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && offStack.getItemMeta() != null && offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()))) {
+            currentTag.add(ActionTag.NONE_HAND);
         } else {
             currentTag.add(ActionTag.BOTH_HAND);
         }
+
         // we did not use any item, rather a regular warped fungus on a stick. lol who uses it?
         if (!currentTag.containsAny(ActionTag.MAIN_HAND, ActionTag.LEFT_HAND, ActionTag.BOTH_HAND)) {
             return;
         }
+
+        ItemUses.put(player, System.currentTimeMillis()); // save that we have triggered event
+
         //to not mess with actual uses of warped fungus
-        if (player.getStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK) > 0) player.decrementStatistic(Statistic.USE_ITEM, Material.WARPED_FUNGUS_ON_A_STICK);
+        player.setStatistic(event.getStatistic(), event.getMaterial(), event.getPreviousValue()); // for some reason does not work as intended, just does not.
 
         // what did he click?
         if (player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER) != null) {
@@ -117,8 +128,6 @@ public class Listeners implements Listener {
             groundStack = ((ItemDisplay) interaction.getVehicle()).getItemStack();
         }
         // priority - groud - main - off
-        ArrayList<ActionTagSet> requested_actions = new ArrayList<>();
-        String working_action = "";
         // data format = "int:action,int:action,int:action" executed from left to right by priority.
         // for example for bundle that might be = "134:PICK_UP_ITEM,292:PUT_DOWN"
         // that means that if we have action 134(on item + left hand) then we do action PICK_UP, then, if fails, we check for 292(with shift, on block, main hand) and if yes - place down bundle
@@ -129,8 +138,8 @@ public class Listeners implements Listener {
                 String[] split = currentCheck.split(":");
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(groundStack, currentTag.toString());
-                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args);
-                    return;
+                    // if we return false, e.g. do not continue -> then do not continue
+                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args)) return;
                 }
             }
         }
@@ -141,8 +150,8 @@ public class Listeners implements Listener {
                 String[] split = currentCheck.split(":");
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(mainStack, currentTag.toString());
-                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args);
-                    return;
+                    // if we return false, e.g. do not continue -> then do not continue
+                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args)) return;
                 }
             }
         }
@@ -153,8 +162,8 @@ public class Listeners implements Listener {
                 String[] split = currentCheck.split(":");
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(offStack, currentTag.toString());
-                    executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args);
-                    return;
+                    // if we return false, e.g. do not continue -> then do not continue
+                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args)) return;
                 }
             }
         }
@@ -166,6 +175,10 @@ public class Listeners implements Listener {
             //place X down, main hand
             case "PLACE_MAIN" -> {
                 Location toPlace = Util.getBlockEyeLoc(player);
+
+                ModifierContext context = new ModifierContext(player, null, null, toPlace, null);
+                ModifierManager.applyModifiers(context, modifiers);
+
                 Interaction spawned_interaction = player.getWorld().spawn(toPlace, Interaction.class);
                 ItemDisplay display = player.getWorld().spawn(toPlace, ItemDisplay.class);
                 spawned_interaction.getPersistentDataContainer().set(ItemTags.Entity.getValue(), PersistentDataType.BOOLEAN, true);
@@ -178,7 +191,8 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = mainStack.clone();
 
-                single_item = applyItemModifiers(single_item, modifiers);
+                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, null);
+                ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
                 display.setItemStack(single_item);
@@ -195,14 +209,19 @@ public class Listeners implements Listener {
                 //make them aligned to the ground
                 display.setRotation(display.getLocation().getYaw(),0);
 
-                applyInteractionModifiers(spawned_interaction, modifiers);
-
                 display.addPassenger(spawned_interaction);
+
+                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, null);
+                ModifierManager.applyModifiers(context, modifiers);
                 return false;
             }
             //place X down, left hand
             case "PLACE_LEFT" -> {
                 Location toPlace = Util.getBlockEyeLoc(player);
+                //modify the location of spawn if needed
+                ModifierContext context = new ModifierContext(player, null, null, toPlace, null);
+                ModifierManager.applyModifiers(context, modifiers);
+
                 Interaction spawned_interaction = player.getWorld().spawn(toPlace, Interaction.class);
                 ItemDisplay display = player.getWorld().spawn(toPlace, ItemDisplay.class);
                 spawned_interaction.getPersistentDataContainer().set(ItemTags.Entity.getValue(), PersistentDataType.BOOLEAN, true);
@@ -215,7 +234,9 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = offStack.clone();
 
-                single_item = applyItemModifiers(single_item, modifiers);
+                //modify item if needed
+                context = new ModifierContext(player, single_item, spawned_interaction, null, null);
+                ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
                 display.setItemStack(single_item);
@@ -231,10 +252,12 @@ public class Listeners implements Listener {
 
                 //make item aligned to the ground
                 display.setRotation(display.getLocation().getYaw(),0);
-                
-                applyInteractionModifiers(spawned_interaction, modifiers);
 
                 display.addPassenger(spawned_interaction);
+                //final apply if not already
+                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, null);
+                ModifierManager.applyModifiers(context, modifiers);
+
                 return false;
             }
             // place X on top of an item, main hand
@@ -246,12 +269,9 @@ public class Listeners implements Listener {
                 clicked_pos.setY(interaction.getInteractionHeight()+0.001); // offset for not clipping
                 Location spawn_loc = interaction.getLocation();
                 spawn_loc.setYaw(player.getLocation().getYaw());
-                for (String modifier : modifiers) {
-                    if (modifier.toUpperCase().equals("ALIGN")) {
-                        clicked_pos.setX(0);
-                        clicked_pos.setZ(0);
-                    }
-                }
+
+                ModifierContext context = new ModifierContext(player, null, null, spawn_loc, clicked_pos);
+                ModifierManager.applyModifiers(context, modifiers);
 
                 spawn_loc.add(clicked_pos);
                 Interaction spawned_interaction = player.getWorld().spawn(spawn_loc, Interaction.class);
@@ -266,7 +286,8 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = mainStack.clone();
 
-                single_item = applyItemModifiers(single_item, modifiers);
+                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_pos);
+                ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
                 display.setItemStack(single_item);
@@ -283,9 +304,11 @@ public class Listeners implements Listener {
                 //make them aligned to the ground
                 display.setRotation(display.getLocation().getYaw(),0);
 
-                applyInteractionModifiers(spawned_interaction, modifiers);
-
                 display.addPassenger(spawned_interaction);
+                //final-check to apply everything if needed
+                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_pos);
+                ModifierManager.applyModifiers(context, modifiers);
+
                 return false;
             }
             // place X on top of an item, left hand
@@ -297,13 +320,9 @@ public class Listeners implements Listener {
                 clicked_pos.setY(interaction.getInteractionHeight()+0.001); // offset for not clipping
                 Location spawn_loc = interaction.getLocation();
                 spawn_loc.setYaw(player.getLocation().getYaw());
-                //TODO maybe move to a separate function for location? maybe uniform all modifiers and just pass Object? idk someone help me :/
-                for (String modifier : modifiers) {
-                    if (modifier.toUpperCase().equals("ALIGN")) {
-                        clicked_pos.setX(0);
-                        clicked_pos.setZ(0);
-                    }
-                }
+
+                ModifierContext context = new ModifierContext(player, null, null, spawn_loc, clicked_pos);
+                ModifierManager.applyModifiers(context, modifiers);
 
                 spawn_loc.add(clicked_pos);
                 Interaction spawned_interaction = player.getWorld().spawn(spawn_loc, Interaction.class);
@@ -318,7 +337,8 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = offStack.clone();
 
-                single_item = applyItemModifiers(single_item, modifiers);
+                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_pos);
+                ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
                 display.setItemStack(single_item);
@@ -335,9 +355,29 @@ public class Listeners implements Listener {
                 //make them aligned to the ground
                 display.setRotation(display.getLocation().getYaw(),0);
 
-                applyInteractionModifiers(spawned_interaction, modifiers);
-
                 display.addPassenger(spawned_interaction);
+
+                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_pos);
+                ModifierManager.applyModifiers(context, modifiers);
+
+                return false;
+            }
+            // suck to bundle in off hand
+            case "PUT_FROM_MAIN" -> {
+                //assumption is - used in bundle to requested to put the item in bundle, the bundle is always in off hand, and the item is in main hand
+                if (offStack == null || offStack.getItemMeta() == null || !offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()) || offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Item.getValue(), PersistentDataType.STRING).equals(ItemTypes.Bundle.getValue()))  {
+                    return true;
+                }
+                if (mainStack == null || mainStack.getItemMeta() == null || !mainStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue())) {
+                    return true;
+                }
+                boolean result = BundleManager.addToBundle(offStack, mainStack);
+                // TODO if true then remove item from inventory
+                //TODO add another mode to pick up from the ground
+                ModifierContext context = new ModifierContext(player, null, null, null, null);
+                ModifierManager.applyModifiers(context, modifiers);
+
+
                 return false;
             }
             //TODO make more modes
@@ -346,53 +386,19 @@ public class Listeners implements Listener {
             case "PICK_UP" -> {
                 ItemDisplay display = (ItemDisplay) interaction.getVehicle();
                 ItemStack groundStack = display.getItemStack();
-                groundStack = applyItemModifiers(groundStack, modifiers);
+
+                ModifierContext context = new ModifierContext(player, groundStack, null, null, null);
+                ModifierManager.applyModifiers(context, modifiers);
+
                 player.getInventory().addItem(groundStack);
                 interaction.remove();
                 display.remove();
-                break;
+                return false;
             }
             default -> {
                 return true;
             }
         }
-        // in reality never used as switch covers all cases and always returns something
-        return true;
-
-    }
-
-    //I will later replace it with some kind of modifier manager, for future me I have the chat in ChatGPT about the modifier stuff from 21.02.2025
-    public static ItemStack applyItemModifiers(ItemStack stack, ArrayList<String> modifiers) {
-        for (String modifier : modifiers) {
-            if (modifier.toUpperCase().matches("RCMDP[123456789]\\d*")) {
-                int bound = Integer.parseInt(modifier.substring(5));
-                int number = new Random().nextInt(0, bound);
-                ItemMeta meta = stack.getItemMeta();
-                meta.setCustomModelData(meta.getCustomModelData()+number);
-                stack.setItemMeta(meta);
-            } else if (modifier.toUpperCase().equals("RESETCMD")) {
-                ItemMeta meta = stack.getItemMeta();
-                meta.setCustomModelData(TablePlays.config.getInt("items." + meta.getPersistentDataContainer().get(ItemTags.Type.getValue(), PersistentDataType.STRING) + ".basecmd"));
-                stack.setItemMeta(meta);
-            }
-        }
-        return stack;
-    }
-
-    public static Interaction applyInteractionModifiers(Interaction interaction, ArrayList<String> modifiers) {
-        //TODO this
-        for (String modifier : modifiers) {
-
-        }
-        return interaction;
-    }
-
-    public static Location applyLocationModifiers(Location location, ArrayList<String> modifiers) {
-        //TODO this
-        for (String modifier : modifiers) {
-            // grid?
-        }
-        return location;
     }
 
 }

@@ -10,6 +10,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 public final class TablePlays extends JavaPlugin implements Listener {
@@ -17,6 +18,7 @@ public final class TablePlays extends JavaPlugin implements Listener {
     public static Plugin instance;
     public static FileConfiguration config = null;
     private static FileConfiguration translations = null;
+    public static FileConfiguration data = null;
     public static boolean isDevAndIsMiniking1000TheBestPlayerInHisMind = true;
     public static Plugin getPlugin() {
         return instance;
@@ -36,7 +38,13 @@ public final class TablePlays extends JavaPlugin implements Listener {
     }
 
     @Override
-    public void onDisable() {}
+    public void onDisable() {
+        try {
+            data.save(new File(getDataFolder(), "saved.yml"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     public void loadConfig() {
@@ -47,6 +55,9 @@ public final class TablePlays extends JavaPlugin implements Listener {
             saveResource("ru.yml", true);
             File translFile = new File(getDataFolder(),  "ru.yml");
             translations = YamlConfiguration.loadConfiguration(translFile);
+            saveResource("saved.yml", false);
+            File dataa = new File(getDataFolder(), "saved.yml");
+            data = YamlConfiguration.loadConfiguration(dataa);
             return;
         }
         File configFile = new File(getDataFolder(), "config.yml");

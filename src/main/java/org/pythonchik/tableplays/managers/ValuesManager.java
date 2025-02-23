@@ -13,10 +13,10 @@ import java.util.List;
 public class ValuesManager {
 
     public static List<Float> getItemHitbox(ItemStack stack) {
-        if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Type.getValue())) {
+        if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Item.getValue())) {
             return null;
         }
-        String type = stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Type.getValue(), PersistentDataType.STRING);
+        String type = stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING);
         if (type == null) {
             return null;
         }
@@ -28,10 +28,10 @@ public class ValuesManager {
     }
 
     public static Transformation getTransformation(ItemStack stack) {
-        if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Type.getValue())) {
+        if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Item.getValue())) {
             return null;
         }
-        String type = stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Type.getValue(), PersistentDataType.STRING);
+        String type = stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING);
         if (type == null) {
             return null;
         }
@@ -48,10 +48,10 @@ public class ValuesManager {
     }
 
     public static int getBaseCMD(ItemStack stack) {
-        if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Type.getValue())) {
+        if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Item.getValue())) {
             return 0;
         }
-        String type = stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Type.getValue(), PersistentDataType.STRING);
+        String type = stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING);
         if (type == null) {
             return 0;
         }
