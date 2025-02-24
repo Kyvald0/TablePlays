@@ -50,10 +50,8 @@ public class Listeners implements Listener {
         } else if (!(mainStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && mainStack.getItemMeta() != null && mainStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()))
                 && offStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && offStack.getItemMeta() != null && offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue())) {
             currentTag.add(ActionTag.LEFT_HAND);
-        } else if (!(mainStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && mainStack.getItemMeta() != null && mainStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()))
-                && !(offStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && offStack.getItemMeta() != null && offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()))) {
-            currentTag.add(ActionTag.NONE_HAND);
-        } else {
+        } else if (mainStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && mainStack.getItemMeta() != null && mainStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue())
+                && offStack.getType().equals(Material.WARPED_FUNGUS_ON_A_STICK) && offStack.getItemMeta() != null && offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue())) {
             currentTag.add(ActionTag.BOTH_HAND);
         }
 
@@ -81,7 +79,7 @@ public class Listeners implements Listener {
         //now that we have all active tags I really need to handle only edge cases, like 2 items that _should_ work together, and leave the rest to the function I'm yet to create
 
         //now that we have handled the edge cases - throw this shit into this function ->
-        handle_action(player, currentTag, currentTag.contains(ActionTag.MAIN_HAND) ? mainStack : null, currentTag.contains(ActionTag.LEFT_HAND) ? offStack : null, null);
+        handle_action(player, currentTag, currentTag.containsAny(ActionTag.MAIN_HAND, ActionTag.BOTH_HAND) ? mainStack : null, currentTag.containsAny(ActionTag.LEFT_HAND, ActionTag.BOTH_HAND) ? offStack : null, null);
     }
 
     @EventHandler
@@ -131,7 +129,6 @@ public class Listeners implements Listener {
         // data format = "int:action,int:action,int:action" executed from left to right by priority.
         // for example for bundle that might be = "134:PICK_UP_ITEM,292:PUT_DOWN"
         // that means that if we have action 134(on item + left hand) then we do action PICK_UP, then, if fails, we check for 292(with shift, on block, main hand) and if yes - place down bundle
-
         if (groundStack != null && groundStack.getItemMeta() != null && groundStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Actions.getValue())) {
             String[] data = (groundStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Actions.getValue(), PersistentDataType.STRING)).split(","); // ignore null execution on split, can not be(well, it might if Actions tag will be not a string, but who cares
             for (String currentCheck : data) {
@@ -155,7 +152,6 @@ public class Listeners implements Listener {
                 }
             }
         }
-
         if (offStack != null && offStack.getItemMeta() != null && offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Actions.getValue())) {
             String[] data = (offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Actions.getValue(), PersistentDataType.STRING)).split(","); // ignore null execution on split, can not be(well, it might if Actions tag will be not a string, but who cares
             for (String currentCheck : data) {
@@ -171,7 +167,7 @@ public class Listeners implements Listener {
     //make a lot of functions to handle actions with card, maybe transport here also some params, maybe in hashmap format, but how to get the obj?
 
     public static boolean executeAction(Player player, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Object... args) {
-        switch (action) {
+        switch (action.toUpperCase()) {
             //place X down, main hand
             case "PLACE_MAIN" -> {
                 Location toPlace = Util.getBlockEyeLoc(player);
@@ -207,7 +203,7 @@ public class Listeners implements Listener {
                 display.setTransformation(ValuesManager.getTransformation(single_item));
 
                 //make them aligned to the ground
-                display.setRotation(display.getLocation().getYaw(),0);
+                display.setRotation(display.getLocation().getYaw(),90);
 
                 display.addPassenger(spawned_interaction);
 
@@ -251,7 +247,7 @@ public class Listeners implements Listener {
                 display.setTransformation(ValuesManager.getTransformation(single_item));
 
                 //make item aligned to the ground
-                display.setRotation(display.getLocation().getYaw(),0);
+                display.setRotation(display.getLocation().getYaw(),90);
 
                 display.addPassenger(spawned_interaction);
                 //final apply if not already
@@ -302,7 +298,7 @@ public class Listeners implements Listener {
                 display.setTransformation(ValuesManager.getTransformation(single_item));
 
                 //make them aligned to the ground
-                display.setRotation(display.getLocation().getYaw(),0);
+                display.setRotation(display.getLocation().getYaw(),90);
 
                 display.addPassenger(spawned_interaction);
                 //final-check to apply everything if needed
@@ -353,7 +349,7 @@ public class Listeners implements Listener {
                 display.setTransformation(ValuesManager.getTransformation(single_item));
 
                 //make them aligned to the ground
-                display.setRotation(display.getLocation().getYaw(),0);
+                display.setRotation(display.getLocation().getYaw(),90);
 
                 display.addPassenger(spawned_interaction);
 
@@ -362,26 +358,123 @@ public class Listeners implements Listener {
 
                 return false;
             }
-            // suck to bundle in off hand
+            // suck to bundle in off hand from the main hand
             case "PUT_FROM_MAIN" -> {
                 //assumption is - used in bundle to requested to put the item in bundle, the bundle is always in off hand, and the item is in main hand
-                if (offStack == null || offStack.getItemMeta() == null || !offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()) || offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Item.getValue(), PersistentDataType.STRING).equals(ItemTypes.Bundle.getValue()))  {
+                if (offStack == null || offStack.getItemMeta() == null || !offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()) || !offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Item.getValue(), PersistentDataType.STRING).equals(ItemTypes.Bundle.getValue()))  {
                     return true;
                 }
                 if (mainStack == null || mainStack.getItemMeta() == null || !mainStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue())) {
                     return true;
                 }
-                boolean result = BundleManager.addToBundle(offStack, mainStack);
-                // TODO if true then remove item from inventory
-                //TODO add another mode to pick up from the ground
-                ModifierContext context = new ModifierContext(player, null, null, null, null);
+                ItemStack single_item = mainStack.clone();
+                single_item.setAmount(1);
+
+                ModifierContext context = new ModifierContext(player, single_item, null, null, null);
                 ModifierManager.applyModifiers(context, modifiers);
 
+                boolean result = BundleManager.addToBundle(offStack, single_item);
+                if (result) {
+                    mainStack.setAmount(mainStack.getAmount()-1);
+                    return false;
+                }
 
+                return true;
+            }
+            // suck to bundle in the off hand from the ground
+            case "PUT_FROM_GROUND" -> {
+                //assumption is - used in bundle to requested to put the item in bundle, the bundle is always in off hand, and the item is in the ground
+                if (offStack == null || offStack.getItemMeta() == null || !offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()) || offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Item.getValue(), PersistentDataType.STRING).equals(ItemTypes.Bundle.getValue()))  {
+                    return true;
+                }
+                if (interaction == null) {
+                    return true;
+                }
+                ItemStack groundStack =  ((ItemDisplay) interaction.getVehicle()).getItemStack();
+                if (groundStack == null || groundStack.getItemMeta() == null || !groundStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue())) {
+                    return true;
+                }
+                ItemStack single_item = groundStack.clone();
+                single_item.setAmount(1);
+
+                ModifierContext context = new ModifierContext(player, single_item, null, null, null);
+                ModifierManager.applyModifiers(context, modifiers);
+
+                boolean result = BundleManager.addToBundle(offStack, single_item);
+                if (result) {
+                    if (groundStack.getAmount() == 1) {
+                        // no items left, just kill this thing
+                        interaction.getVehicle().remove();
+                        interaction.remove();
+                    } else {
+                        groundStack.setAmount(groundStack.getAmount()-1);
+                        ((ItemDisplay)interaction.getVehicle()).setItemStack(groundStack);
+                    }
+                    return false;
+                }
+
+                return true;
+            }
+            // get from the bundle in main
+            case "GET_FROM_BUNDLE_MAIN" -> {
+                if (!BundleManager.isValidBundle(mainStack)) {
+                    return true;
+                }
+                ArrayList<ItemStack> items = BundleManager.getBundleItems(mainStack);
+                if (items.isEmpty()) return true;
+                String order = mainStack.getItemMeta().getPersistentDataContainer().get(ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).split(";")[2]; // literal 'random', 'stack', or 'queue'
+                ItemStack toAdd;
+                int index;
+                if (order.equals("random")) {
+                    index = new Random(0).nextInt(0, items.size()-1);
+                    toAdd = items.get(index);
+                } else if (order.equals("stack")) {
+                    index = items.size()-1;
+                    toAdd = items.getLast();
+                } else {
+                    index = 0;
+                    toAdd = items.getFirst();
+                }
+                items.remove(index);
+                BundleManager.saveItemsToBundle(mainStack, items);
+                HashMap<Integer, ItemStack> left = player.getInventory().addItem(toAdd);
+                if (!left.isEmpty()) {
+                    for (ItemStack leftover : left.values()) {
+                        player.getWorld().dropItemNaturally(player.getLocation(), leftover);
+                    }
+                }
                 return false;
             }
-            //TODO make more modes
-
+            // get from the bundle in main
+            case "GET_FROM_BUNDLE_LEFT" -> {
+                if (!BundleManager.isValidBundle(offStack)) {
+                    return true;
+                }
+                ArrayList<ItemStack> items = BundleManager.getBundleItems(offStack);
+                if (items.isEmpty()) return true;
+                String order = offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).split(";")[2]; // literal 'random', 'stack', or 'queue'
+                ItemStack toAdd;
+                int index;
+                if (order.equals("random")) {
+                    index = new Random(0).nextInt(0, items.size()-1);
+                    toAdd = items.get(index);
+                } else if (order.equals("stack")) {
+                    index = items.size()-1;
+                    toAdd = items.getLast();
+                } else {
+                    index = 0;
+                    toAdd = items.getFirst();
+                }
+                items.remove(index);
+                BundleManager.saveItemsToBundle(offStack, items);
+                HashMap<Integer, ItemStack> left = player.getInventory().addItem(toAdd);
+                if (!left.isEmpty()) {
+                    for (ItemStack leftover : left.values()) {
+                        player.getWorld().dropItemNaturally(player.getLocation(), leftover);
+                    }
+                }
+                return false;
+            }
             // pick up from the ground
             case "PICK_UP" -> {
                 ItemDisplay display = (ItemDisplay) interaction.getVehicle();
@@ -390,11 +483,19 @@ public class Listeners implements Listener {
                 ModifierContext context = new ModifierContext(player, groundStack, null, null, null);
                 ModifierManager.applyModifiers(context, modifiers);
 
-                player.getInventory().addItem(groundStack);
+                HashMap<Integer, ItemStack> left = player.getInventory().addItem(groundStack);
+                if (!left.isEmpty()) {
+                    for (ItemStack leftover : left.values()) {
+                        player.getWorld().dropItemNaturally(interaction.getLocation(), leftover);
+                    }
+                }
                 interaction.remove();
                 display.remove();
                 return false;
             }
+            //TODO make `nothing` action, to only apply modifiers(e.g. flip)
+            //TODO make more modes
+
             default -> {
                 return true;
             }

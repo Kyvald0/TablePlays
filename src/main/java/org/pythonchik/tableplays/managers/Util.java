@@ -190,7 +190,7 @@ public class Util {
     }
 
     public static ArrayList<String> getModifiers(ItemStack stack, String action) { // action here is number from ActionTagSet.toString()
-        String[] modifs = (stack.getItemMeta().getPersistentDataContainer().get(ItemTags.Modifiers.getValue(), PersistentDataType.STRING)).split(",");
+        String[] modifs = (stack.getItemMeta().getPersistentDataContainer().getOrDefault(ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "")).split(",");
         ArrayList<String> modifiers = new ArrayList<>();
         for (String modif : modifs) {
             String[] split_mod = modif.split(":");

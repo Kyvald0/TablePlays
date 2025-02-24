@@ -40,4 +40,16 @@ public class ModifierContext {
     }
 
     public Optional<Vector> getVector() {return Optional.ofNullable(clicked_pos);}
+
+    @Override
+    public String toString() {
+        return "ModifierContext{" +
+                "player=" + (player != null ? player.getName() : "null") + ", " +
+                "itemStack=" + (itemStack != null ? itemStack.toString() : "null") + ", " +
+                "interaction=" + (interaction != null ? interaction.toString() : "null") + ", " +
+                "location=" + (location != null ? location.toString() : "null") + ", " +
+                "clicked_pos=" + (clicked_pos != null ? clicked_pos.toString() : "null") +
+                '}';
+    }
+
 }

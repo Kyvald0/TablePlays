@@ -57,26 +57,26 @@ public class ValuesManager {
         }
         ConfigurationSection config = TablePlays.config;
         if (config.contains("items") && config.contains("items." + type) && config.contains("items." + type + ".basecmd")) {
-            if (stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.SubType.getValue())) {
+            if (stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER)) {
                 // add variant if we have one, nullpoint exception might only be if type is not int, so manual change, that means fuck you if you manually change it
-                return config.getInt("items." + type + ".basecmd") + stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER);
+                return config.getInt("items." + type + ".basecmd", 1) + stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER);
             }
-            return config.getInt("items." + type + ".basecmd");
+            return config.getInt("items." + type + ".basecmd", 1);
         }
         return 0;
     }
     public static int getBaseCMD(String type) {
         ConfigurationSection config = TablePlays.config;
         if (config.contains("items") && config.contains("items." + type) && config.contains("items." + type + ".basecmd")) {
-            return config.getInt("items." + type + ".basecmd");
+            return config.getInt("items." + type + ".basecmd", 1);
         }
         return 0;
     }
 
     public static int getMaxStack(String type) {
         ConfigurationSection config = TablePlays.config;
-        if (config.contains("items")  && config.contains("items." + type) && config.contains("items." + type + ".max_stack")) {
-            return config.getInt("items." + type + ".max_stack");
+        if (config.contains("items") && config.contains("items." + type) && config.contains("items." + type + ".max_stack")) {
+            return config.getInt("items." + type + ".max_stack", 1);
         }
         return 1;
     }

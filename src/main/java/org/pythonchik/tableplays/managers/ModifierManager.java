@@ -27,8 +27,8 @@ public class ModifierManager {
             for (Pattern pattern : MODIFIER_MAP.keySet()) {
                 if (pattern.matcher(mod).matches()) {
                     BaseModifier modifier = MODIFIER_MAP.get(pattern);
-                    modifier.apply(context, mod, modifiers);
-                    iterator.remove();
+                    boolean result = modifier.apply(context, mod, modifiers);
+                    if (result) iterator.remove();
                     break;
                 }
             }
