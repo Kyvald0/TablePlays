@@ -110,6 +110,13 @@ public class Listeners implements Listener {
             currentTag.add(ActionTag.WITH_SHIFT);
         }
 
+        //prevent double-calling from holding an item in 2 hands
+        if (System.currentTimeMillis() - ItemUses.getOrDefault(player, 0L) < 1000/Bukkit.getServer().getServerTickManager().getTickRate()) {
+            event.setCancelled(true);
+            return;
+        }
+        ItemUses.put(player, System.currentTimeMillis()); // save that we have triggered event
+
         //now that we have all active tags I really need to handle only edge cases, like 2 items that _should_ work together, and leave the rest to the function I'm yet to create
 
         //now that we have handled the edge cases - throw this shit into this function ->
@@ -168,6 +175,20 @@ public class Listeners implements Listener {
 
     public static boolean executeAction(Player player, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Object... args) {
         switch (action.toUpperCase()) {
+            //does nothing by itself, but applies modifiers to everything it can
+            case "NOTHING" -> {
+                if (mainStack != null) {
+                    ModifierContext context = new ModifierContext(player, mainStack, interaction, null, null);
+                    ModifierManager.applyModifiers(context, modifiers);
+                } else if (offStack != null) {
+                    ModifierContext context = new ModifierContext(player, offStack, interaction, null, null);
+                    ModifierManager.applyModifiers(context, modifiers);
+                } else {
+                    ModifierContext context = new ModifierContext(player, null, interaction, null, (Vector) args[0]);
+                    ModifierManager.applyModifiers(context, modifiers);
+                }
+                return true;
+            }
             //place X down, main hand
             case "PLACE_MAIN" -> {
                 Location toPlace = Util.getBlockEyeLoc(player);
@@ -203,7 +224,7 @@ public class Listeners implements Listener {
                 display.setTransformation(ValuesManager.getTransformation(single_item));
 
                 //make them aligned to the ground
-                display.setRotation(display.getLocation().getYaw(),90);
+                display.setRotation(display.getLocation().getYaw(),ValuesManager.getPitch(single_item));
 
                 display.addPassenger(spawned_interaction);
 
@@ -247,7 +268,7 @@ public class Listeners implements Listener {
                 display.setTransformation(ValuesManager.getTransformation(single_item));
 
                 //make item aligned to the ground
-                display.setRotation(display.getLocation().getYaw(),90);
+                display.setRotation(display.getLocation().getYaw(),ValuesManager.getPitch(single_item));
 
                 display.addPassenger(spawned_interaction);
                 //final apply if not already
@@ -298,7 +319,7 @@ public class Listeners implements Listener {
                 display.setTransformation(ValuesManager.getTransformation(single_item));
 
                 //make them aligned to the ground
-                display.setRotation(display.getLocation().getYaw(),90);
+                display.setRotation(display.getLocation().getYaw(),ValuesManager.getPitch(single_item));
 
                 display.addPassenger(spawned_interaction);
                 //final-check to apply everything if needed
@@ -349,7 +370,7 @@ public class Listeners implements Listener {
                 display.setTransformation(ValuesManager.getTransformation(single_item));
 
                 //make them aligned to the ground
-                display.setRotation(display.getLocation().getYaw(),90);
+                display.setRotation(display.getLocation().getYaw(),ValuesManager.getPitch(single_item));
 
                 display.addPassenger(spawned_interaction);
 
@@ -425,7 +446,7 @@ public class Listeners implements Listener {
                 String order = mainStack.getItemMeta().getPersistentDataContainer().get(ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).split(";")[2]; // literal 'random', 'stack', or 'queue'
                 ItemStack toAdd;
                 int index;
-                if (order.equals("random")) {
+                if (order.equals("random") && items.size() != 1) {
                     index = new Random(0).nextInt(0, items.size()-1);
                     toAdd = items.get(index);
                 } else if (order.equals("stack")) {
@@ -455,7 +476,7 @@ public class Listeners implements Listener {
                 String order = offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).split(";")[2]; // literal 'random', 'stack', or 'queue'
                 ItemStack toAdd;
                 int index;
-                if (order.equals("random")) {
+                if (order.equals("random") && items.size() != 1) {
                     index = new Random(0).nextInt(0, items.size()-1);
                     toAdd = items.get(index);
                 } else if (order.equals("stack")) {
@@ -493,7 +514,6 @@ public class Listeners implements Listener {
                 display.remove();
                 return false;
             }
-            //TODO make `nothing` action, to only apply modifiers(e.g. flip)
             //TODO make more modes
 
             default -> {

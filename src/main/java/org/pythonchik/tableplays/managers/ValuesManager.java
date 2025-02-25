@@ -8,6 +8,9 @@ import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
+import javax.swing.*;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class ValuesManager {
@@ -65,19 +68,34 @@ public class ValuesManager {
         }
         return 0;
     }
+
     public static int getBaseCMD(String type) {
-        ConfigurationSection config = TablePlays.config;
-        if (config.contains("items") && config.contains("items." + type) && config.contains("items." + type + ".basecmd")) {
-            return config.getInt("items." + type + ".basecmd", 1);
-        }
-        return 0;
+        return TablePlays.config.getInt("items." + type + ".basecmd", 1);
     }
 
     public static int getMaxStack(String type) {
-        ConfigurationSection config = TablePlays.config;
-        if (config.contains("items") && config.contains("items." + type) && config.contains("items." + type + ".max_stack")) {
-            return config.getInt("items." + type + ".max_stack", 1);
+        return TablePlays.config.getInt("items." + type + ".max_stack", 1);
+    }
+
+    public static String getSaveType(int items) {
+        if (TablePlays.config.getBoolean("allow_files", false)) {
+            if (items > TablePlays.config.getInt("file_threshold", 36)) return "uuid";
         }
-        return 1;
+        return "data";
+    }
+
+    public static int getPitch(String type) {
+        return TablePlays.config.getInt("items." + type + ".pitch", 90);
+    }
+
+    public static int getPitch(ItemStack stack) {
+        if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Item.getValue())) {
+            return 0;
+        }
+        String type = stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING);
+        if (type == null) {
+            return 0;
+        }
+        return getPitch(type);
     }
 }

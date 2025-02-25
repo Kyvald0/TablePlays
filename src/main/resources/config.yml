@@ -4,12 +4,18 @@ lang: ru
 
 # if true some items and/or big tags will be saved in the `saved.yml` file
 # this is not yet working, I hope I will do this feature and change this text, or otherwise you may try to use it, but it may do nothing
-allow-files: false
+allow_files: true
+
+# matters only if `allow-files` is true
+# if bundle's max items is more than this number, then the save will be in the file
+# otherwise - in the item itself
+file_threshold: 36
 
 
 #DO NOT EDIT UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING
 items:
   dice:
+    pitch: 0
     hitbox:
       - 0.35
       - 0.35
@@ -31,6 +37,7 @@ items:
     basecmd: 33400
     max_stack: 4
   card:
+    pitch: 90
     hitbox:
       - 0.35
       - 0.001
@@ -51,6 +58,7 @@ items:
       - 0
     basecmd: 33000
   bundle:
+    pitch: 90
     hitbox:
       - 0.45
       - 0.001
