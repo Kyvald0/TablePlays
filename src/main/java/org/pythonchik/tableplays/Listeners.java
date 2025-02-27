@@ -1,6 +1,10 @@
 package org.pythonchik.tableplays;
 
 import org.bukkit.*;
+import org.bukkit.event.inventory.*;
+import org.bukkit.inventory.CraftingInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.util.Vector;
 import org.pythonchik.tableplays.managers.BundleManager;
 import org.pythonchik.tableplays.managers.ModifierManager;
@@ -65,12 +69,14 @@ public class Listeners implements Listener {
         //to not mess with actual uses of warped fungus
         player.setStatistic(event.getStatistic(), event.getMaterial(), event.getPreviousValue()); // for some reason does not work as intended, just does not.
 
+
         // what did he click?
         if (player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER) != null) {
             currentTag.add(ActionTag.ON_BLOCK);
         } else {
             currentTag.add(ActionTag.ON_AIR);
         }
+        Vector clicked_position = Util.getClickedPosition(player);
         //is he holding shift?
         if (player.isSneaking()) {
             currentTag.add(ActionTag.WITH_SHIFT);
@@ -79,7 +85,7 @@ public class Listeners implements Listener {
         //now that we have all active tags I really need to handle only edge cases, like 2 items that _should_ work together, and leave the rest to the function I'm yet to create
 
         //now that we have handled the edge cases - throw this shit into this function ->
-        handle_action(player, currentTag, currentTag.containsAny(ActionTag.MAIN_HAND, ActionTag.BOTH_HAND) ? mainStack : null, currentTag.containsAny(ActionTag.LEFT_HAND, ActionTag.BOTH_HAND) ? offStack : null, null);
+        handle_action(player, currentTag, currentTag.containsAny(ActionTag.MAIN_HAND, ActionTag.BOTH_HAND) ? mainStack : null, currentTag.containsAny(ActionTag.LEFT_HAND, ActionTag.BOTH_HAND) ? offStack : null, null, clicked_position);
     }
 
     @EventHandler
@@ -123,7 +129,7 @@ public class Listeners implements Listener {
         handle_action(player, currentTag, currentTag.contains(ActionTag.MAIN_HAND) ? mainStack : null, currentTag.contains(ActionTag.LEFT_HAND) ? offStack : null, (Interaction) event.getRightClicked(), event.getClickedPosition());
     }
 
-    public static void handle_action(Player player, ActionTagSet currentTag, ItemStack mainStack, ItemStack offStack, Interaction interaction, Object... args) {
+    public static void handle_action(Player player, ActionTagSet currentTag, ItemStack mainStack, ItemStack offStack, Interaction interaction, Vector clicked_position) {
         //this should be impossible, but we can never know
         if (mainStack == null && offStack == null && interaction == null) {
             return;
@@ -143,7 +149,7 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(groundStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args)) return;
+                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
@@ -155,7 +161,7 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(mainStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args)) return;
+                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
@@ -166,25 +172,25 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(offStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, args)) return;
+                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
     }
     //make a lot of functions to handle actions with card, maybe transport here also some params, maybe in hashmap format, but how to get the obj?
 
-    public static boolean executeAction(Player player, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Object... args) {
+    public static boolean executeAction(Player player, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Vector clicked_position) {
         switch (action.toUpperCase()) {
             //does nothing by itself, but applies modifiers to everything it can
             case "NOTHING" -> {
                 if (mainStack != null) {
-                    ModifierContext context = new ModifierContext(player, mainStack, interaction, null, null);
+                    ModifierContext context = new ModifierContext(player, mainStack, interaction, null, clicked_position);
                     ModifierManager.applyModifiers(context, modifiers);
                 } else if (offStack != null) {
-                    ModifierContext context = new ModifierContext(player, offStack, interaction, null, null);
+                    ModifierContext context = new ModifierContext(player, offStack, interaction, null, clicked_position);
                     ModifierManager.applyModifiers(context, modifiers);
                 } else {
-                    ModifierContext context = new ModifierContext(player, null, interaction, null, (Vector) args[0]);
+                    ModifierContext context = new ModifierContext(player, null, interaction, null, clicked_position);
                     ModifierManager.applyModifiers(context, modifiers);
                 }
                 return true;
@@ -193,7 +199,7 @@ public class Listeners implements Listener {
             case "PLACE_MAIN" -> {
                 Location toPlace = Util.getBlockEyeLoc(player);
 
-                ModifierContext context = new ModifierContext(player, null, null, toPlace, null);
+                ModifierContext context = new ModifierContext(player, null, null, toPlace, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 Interaction spawned_interaction = player.getWorld().spawn(toPlace, Interaction.class);
@@ -208,7 +214,7 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = mainStack.clone();
 
-                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, null);
+                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
@@ -228,7 +234,7 @@ public class Listeners implements Listener {
 
                 display.addPassenger(spawned_interaction);
 
-                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, null);
+                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
                 return false;
             }
@@ -236,7 +242,7 @@ public class Listeners implements Listener {
             case "PLACE_LEFT" -> {
                 Location toPlace = Util.getBlockEyeLoc(player);
                 //modify the location of spawn if needed
-                ModifierContext context = new ModifierContext(player, null, null, toPlace, null);
+                ModifierContext context = new ModifierContext(player, null, null, toPlace, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 Interaction spawned_interaction = player.getWorld().spawn(toPlace, Interaction.class);
@@ -272,25 +278,24 @@ public class Listeners implements Listener {
 
                 display.addPassenger(spawned_interaction);
                 //final apply if not already
-                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, null);
+                context = new ModifierContext(player, single_item, spawned_interaction, toPlace, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 return false;
             }
             // place X on top of an item, main hand
             case "PLACE_TOP_MAIN" -> {
-                if (args.length == 0 || interaction == null) {
+                if (clicked_position == null || interaction == null) {
                     return true;
                 }
-                Vector clicked_pos = (Vector) args[0];
-                clicked_pos.setY(interaction.getInteractionHeight()+0.001); // offset for not clipping
+                clicked_position.setY(interaction.getInteractionHeight()+0.001); // offset for not clipping
                 Location spawn_loc = interaction.getLocation();
                 spawn_loc.setYaw(player.getLocation().getYaw());
 
-                ModifierContext context = new ModifierContext(player, null, null, spawn_loc, clicked_pos);
+                ModifierContext context = new ModifierContext(player, null, null, spawn_loc, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
-                spawn_loc.add(clicked_pos);
+                spawn_loc.add(clicked_position);
                 Interaction spawned_interaction = player.getWorld().spawn(spawn_loc, Interaction.class);
                 ItemDisplay display = player.getWorld().spawn(spawn_loc, ItemDisplay.class);
                 spawned_interaction.getPersistentDataContainer().set(ItemTags.Entity.getValue(), PersistentDataType.BOOLEAN, true);
@@ -303,7 +308,7 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = mainStack.clone();
 
-                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_pos);
+                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
@@ -323,25 +328,24 @@ public class Listeners implements Listener {
 
                 display.addPassenger(spawned_interaction);
                 //final-check to apply everything if needed
-                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_pos);
+                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 return false;
             }
             // place X on top of an item, left hand
             case "PLACE_TOP_LEFT" -> {
-                if (args.length == 0 || interaction == null) {
+                if (clicked_position == null || interaction == null) {
                     return true;
                 }
-                Vector clicked_pos = (Vector) args[0];
-                clicked_pos.setY(interaction.getInteractionHeight()+0.001); // offset for not clipping
+                clicked_position.setY(interaction.getInteractionHeight()+0.001); // offset for not clipping
                 Location spawn_loc = interaction.getLocation();
                 spawn_loc.setYaw(player.getLocation().getYaw());
 
-                ModifierContext context = new ModifierContext(player, null, null, spawn_loc, clicked_pos);
+                ModifierContext context = new ModifierContext(player, null, null, spawn_loc, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
-                spawn_loc.add(clicked_pos);
+                spawn_loc.add(clicked_position);
                 Interaction spawned_interaction = player.getWorld().spawn(spawn_loc, Interaction.class);
                 ItemDisplay display = player.getWorld().spawn(spawn_loc, ItemDisplay.class);
                 spawned_interaction.getPersistentDataContainer().set(ItemTags.Entity.getValue(), PersistentDataType.BOOLEAN, true);
@@ -354,7 +358,7 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = offStack.clone();
 
-                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_pos);
+                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
@@ -374,7 +378,7 @@ public class Listeners implements Listener {
 
                 display.addPassenger(spawned_interaction);
 
-                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_pos);
+                context = new ModifierContext(player, single_item, spawned_interaction, spawn_loc, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 return false;
@@ -391,7 +395,7 @@ public class Listeners implements Listener {
                 ItemStack single_item = mainStack.clone();
                 single_item.setAmount(1);
 
-                ModifierContext context = new ModifierContext(player, single_item, null, null, null);
+                ModifierContext context = new ModifierContext(player, single_item, null, null, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 boolean result = BundleManager.addToBundle(offStack, single_item);
@@ -418,7 +422,7 @@ public class Listeners implements Listener {
                 ItemStack single_item = groundStack.clone();
                 single_item.setAmount(1);
 
-                ModifierContext context = new ModifierContext(player, single_item, null, null, null);
+                ModifierContext context = new ModifierContext(player, single_item, null, null, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 boolean result = BundleManager.addToBundle(offStack, single_item);
@@ -501,7 +505,7 @@ public class Listeners implements Listener {
                 ItemDisplay display = (ItemDisplay) interaction.getVehicle();
                 ItemStack groundStack = display.getItemStack();
 
-                ModifierContext context = new ModifierContext(player, groundStack, null, null, null);
+                ModifierContext context = new ModifierContext(player, groundStack, null, null, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 HashMap<Integer, ItemStack> left = player.getInventory().addItem(groundStack);
@@ -518,6 +522,60 @@ public class Listeners implements Listener {
 
             default -> {
                 return true;
+            }
+        }
+    }
+
+
+    @EventHandler
+    public static void CraftListener(PrepareItemCraftEvent event) {
+        CraftingInventory inventory = event.getInventory();
+        ItemStack[] matrix = inventory.getMatrix();
+
+        int itemCount = 0;
+        int subType = -1;
+        int amount = 0;
+        int itemSlot = -1;
+
+        for (int i = 0; i < matrix.length; i++) {
+            ItemStack item = matrix[i];
+            if (item == null || item.getType().isAir()) continue; // Skip empty slots
+            // If there's more than one item, stop early
+            if (++itemCount > 1) return;
+
+            // Check if it's a Warped Fungus on a Stick
+            if (item.getType() != Material.WARPED_FUNGUS_ON_A_STICK) return;
+            // Check for PersistentDataContainer (PDC) data
+            ItemMeta meta = item.getItemMeta();
+            if (meta == null) return;
+
+            PersistentDataContainer data = meta.getPersistentDataContainer();
+
+            // Ensure the first tag (String) exists and matches the required value
+            if (!data.has(Util.ItemTags.Item.getValue(), PersistentDataType.STRING) ||
+                    !Util.ItemTypes.Chip.getValue().equals(data.get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING))) {
+                return;
+            }
+
+            // Ensure the second tag (Int) exists and store it in a variable
+            if (!data.has(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER)) {
+                return;
+            }
+            subType = data.get(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER);
+            amount = item.getAmount();
+            itemSlot = i+1; // +1 because i++, and not ++i;
+        }
+
+        if (itemCount == 1) {
+            Material resultMaterial = null;
+            for (Material material : ValuesManager.chips.keySet()) {
+                if (ValuesManager.chips.get(material) == subType) {
+                    resultMaterial = material;
+                    break;
+                }
+            }
+            if (resultMaterial != null) {
+                inventory.setItem(itemSlot, new ItemStack(resultMaterial, amount));
             }
         }
     }

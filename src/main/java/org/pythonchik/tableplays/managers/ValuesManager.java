@@ -1,5 +1,6 @@
 package org.pythonchik.tableplays.managers;
 
+import org.bukkit.Material;
 import org.pythonchik.tableplays.TablePlays;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -8,12 +9,12 @@ import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
-import javax.swing.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 public class ValuesManager {
+
+    public static HashMap<Material, Integer> chips = new HashMap<>();
 
     public static List<Float> getItemHitbox(ItemStack stack) {
         if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Item.getValue())) {
@@ -97,5 +98,22 @@ public class ValuesManager {
             return 0;
         }
         return getPitch(type);
+    }
+
+    public static void generateChipVariants() {
+        //TODO make it not as specific. Tho I don't think I will without a reason, it does not sound nice to make something as specific as not specific
+        HashMap<Material, Integer> map = new HashMap<>();
+        if (TablePlays.config.contains("items") && TablePlays.config.contains("items.chip") && TablePlays.config.contains("items.chip.variants")) {
+            ConfigurationSection config = TablePlays.config.getConfigurationSection("items.chip.variants");
+            for (String key : config.getKeys(false)) {
+                if (Material.getMaterial(key) != null) map.put(Material.getMaterial(key), config.getInt(key));
+                else System.out.println("Error while trying to get material for: " + key);
+            }
+        }
+        chips = map;
+    }
+
+    public static HashMap<Material, Integer> getChipVariants() {
+        return ValuesManager.chips;
     }
 }

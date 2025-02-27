@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.pythonchik.tableplays.managers.ValuesManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ public class commands implements CommandExecutor {
         if (sender instanceof Player) {
             if (command.getName().equals("base64")) {
                 Player player = (Player) sender;
+                System.out.println(ValuesManager.getBaseCMD("chip"));
                 ItemStack stack = player.getInventory().getItemInMainHand();
                 String items = Util.convertItemsToBase64(new ArrayList<>(List.of(stack)));
                 player.getInventory().addItem(Util.getItemsFromBase64(items).getFirst());
@@ -27,6 +29,9 @@ public class commands implements CommandExecutor {
                 player.getInventory().addItem(ItemCreator.get36bundle());
                 player.getInventory().addItem(ItemCreator.get52bundle());
                 player.getInventory().addItem(ItemCreator.get54bundle());
+                for (int i=0; i <= 7; i++) {
+                    player.getInventory().addItem(ItemCreator.getChip(i));
+                }
             }
         }
         return true;

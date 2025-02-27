@@ -12,8 +12,8 @@ public class ModifierContext {
     private final ItemStack itemStack; // stack in question
     private final Interaction interaction; // interaction of an item
     private final Player player; // player who made me do this (me:( )
-    private final Location location; // clicked location on the interaction
-    private final Vector clicked_pos;
+    private final Location location; // where to spawn a interaction
+    private final Vector clicked_pos; // where I have clicked localy on a block or interaction
 
     public ModifierContext(Player player, ItemStack itemStack, Interaction interaction, Location location, Vector clicked_pos) {
         this.itemStack = itemStack;

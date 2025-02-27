@@ -42,9 +42,14 @@ public class translationManager {
     }
 
     public List<String> getLore(ItemStack item) {
-        //TODO add sub-type lore
         String type = item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING);
-        List<String> lore = translations.getStringList(type + ".lore");
+        List<String> lore;
+        try {
+            String sub = "_" + item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER);
+            lore = translations.getStringList(type + sub + ".lore");
+        } catch (Exception ignored) {
+            lore = translations.getStringList(type + ".lore");
+        }
         lore.replaceAll(textToTranslate -> ChatColor.translateAlternateColorCodes('&', textToTranslate));
         lore.replaceAll(textToTranslate -> {
             String translated = ChatColor.translateAlternateColorCodes('&', textToTranslate);

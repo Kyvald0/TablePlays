@@ -1,5 +1,7 @@
 package org.pythonchik.tableplays.managers;
 
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.util.RayTraceResult;
 import org.pythonchik.tableplays.TablePlays;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -139,6 +141,7 @@ public class Util {
     public enum ItemTypes {
         Dice("dice"),
         Card("card"), //TODO switch to this, and have dice be pick up from here
+        Chip("chip"),
         Bundle("bundle");
         private String value;
         ItemTypes(String value) {
@@ -199,5 +202,26 @@ public class Util {
             }
         }
         return modifiers;
+    }
+
+    public static Vector getClickedPosition(Player player) {
+        RayTraceResult result = player.getWorld().rayTraceBlocks(player.getEyeLocation(), player.getEyeLocation().getDirection(), (int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue());
+
+        if (result == null || result.getHitBlock() == null) {
+            return null; // No block hit
+        }
+
+        // Get the exact hit position
+        Location hitPos = result.getHitPosition().toLocation(player.getWorld());
+
+        // Get the block's world position (integer values)
+        Location blockPos = result.getHitBlock().getLocation();
+
+        // Convert to local block coordinates (values between 0 and 1)
+        double localX = hitPos.getX() - blockPos.getBlockX();
+        double localY = hitPos.getY() - blockPos.getBlockY();
+        double localZ = hitPos.getZ() - blockPos.getBlockZ();
+
+        return new Vector(localX, localY, localZ);
     }
 }

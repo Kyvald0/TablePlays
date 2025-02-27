@@ -12,9 +12,11 @@ public class ModifierManager {
 
     static {
         MODIFIER_MAP.put(Pattern.compile("RESETCMD"), new ResetCMDModifier());
-        MODIFIER_MAP.put(Pattern.compile("RCMDP[123456789]\\d*"), new RandomCMDModifier());
+        MODIFIER_MAP.put(Pattern.compile("RCMDP[1-9]\\d*"), new RandomCMDModifier());
         MODIFIER_MAP.put(Pattern.compile("ALIGN"), new AlignModifier());
         MODIFIER_MAP.put(Pattern.compile("FLIP"), new FlipModifier());
+        MODIFIER_MAP.put(Pattern.compile("CGRID[1-9]\\d*"), new CGridModifier());
+        MODIFIER_MAP.put(Pattern.compile("RANDYAW"), new RandYawModifier());
     }
 
     public static void applyModifiers(ModifierContext context, List<String> modifiers) {

@@ -1,6 +1,7 @@
 package org.pythonchik.tableplays;
 
 import org.pythonchik.tableplays.managers.RecipeManager;
+import org.pythonchik.tableplays.managers.ValuesManager;
 import org.pythonchik.tableplays.managers.translationManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -29,6 +30,7 @@ public final class TablePlays extends JavaPlugin implements Listener {
         instance = this;
         loadConfig();
         new translationManager(translations);
+        ValuesManager.generateChipVariants();
         Bukkit.getServer().getPluginManager().registerEvents(new Listeners(), this);
         RecipeManager.init(this);
         if (isDevAndIsMiniking1000TheBestPlayerInHisMind) {

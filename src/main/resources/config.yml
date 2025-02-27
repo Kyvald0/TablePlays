@@ -14,6 +14,37 @@ file_threshold: 36
 
 #DO NOT EDIT UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING
 items:
+  chip:
+    basecmd: 33770
+    max_stack: 16
+    pitch: 90
+    hitbox:
+      - 0.25
+      - 0.02
+    transformation:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0.25
+      - 0.2
+      - 0.25
+      - 0.7853981634
+      - 0
+      - 0
+      - 0
+    variants:
+      PAPER: 0
+      EMERALD: 1
+      GOLD_INGOT: 2
+      DIAMOND: 3
+      DEEPSLATE_DIAMOND_ORE: 4
+      DIAMOND_BLOCK: 5
+      NETHERITE_INGOT: 6
+      NETHERITE_BLOCK: 7
   dice:
     pitch: 0
     hitbox:

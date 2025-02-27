@@ -1,27 +1,37 @@
 package org.pythonchik.tableplays.managers;
 
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.inventory.CraftingInventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.pythonchik.tableplays.TablePlays;
 import org.pythonchik.tableplays.bigdata;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.Plugin;
 
+import java.util.HashMap;
+
 public class RecipeManager {
     public static void init(Plugin plugin){
-        //cards52(plugin);
-        //cards36(plugin);
-        //cards54(plugin);
+        cards52(plugin);
+        cards36(plugin);
+        cards54(plugin);
         dice(plugin);
         //checkers(plugin);
         //board(plugin);
         //chess(plugin);
         //domino(plugin);
+        chips(plugin);
     }
     private static void cards52(Plugin plugin){
-        ItemStack final_item = Util.getItemsFromBase64(bigdata.get52bundle()).getFirst();
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards52bundle"), final_item);
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards52bundle"), ItemCreator.get52bundle());
         recipe.shape(
                 "PPP",
                 "RSB",
@@ -34,8 +44,9 @@ public class RecipeManager {
         recipe.setIngredient('L', Material.LEATHER);
         Bukkit.addRecipe(recipe);
     }
+
     private static void cards54(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards54bundle"),Util.getItemsFromBase64(bigdata.get54bundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards54bundle"), ItemCreator.get54bundle());
         recipe.shape(
                 "PPP",
                 "RLB",
@@ -48,8 +59,9 @@ public class RecipeManager {
         recipe.setIngredient('L', Material.LEATHER);
         Bukkit.addRecipe(recipe);
     }
+
     private static void cards36(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards56bundle"),Util.getItemsFromBase64(bigdata.get36bundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards56bundle"), ItemCreator.get36bundle());
         recipe.shape(
                 "PPP",
                 "BSR",
@@ -62,9 +74,9 @@ public class RecipeManager {
         recipe.setIngredient('L', Material.LEATHER);
         Bukkit.addRecipe(recipe);
     }
+
     private static void dice(Plugin plugin) {
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "dice"), ItemCreator.getDice());
-        //TODO make craft configurable? how?
         recipe.shape(
                 " W ",
                 "ABA",
@@ -76,6 +88,7 @@ public class RecipeManager {
         recipe.setIngredient('b', Material.BLACK_DYE);
         Bukkit.addRecipe(recipe);
     }
+
     private static void checkers(Plugin plugin){
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"checkersbundle"),Util.getItemsFromBase64(bigdata.getCheckersBundle()).getFirst());
         recipe.shape(
@@ -90,6 +103,7 @@ public class RecipeManager {
         recipe.setIngredient('L', Material.LEATHER);
         Bukkit.addRecipe(recipe);
     }
+
     private static void board(Plugin plugin){
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"board"),Util.getItemsFromBase64(bigdata.getBoard()).getFirst());
         recipe.shape(
@@ -100,6 +114,7 @@ public class RecipeManager {
         recipe.setIngredient('S',Material.DARK_OAK_SLAB);
         Bukkit.addRecipe(recipe);
     }
+
     private static void chess(Plugin plugin){
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"chessbundle"),Util.getItemsFromBase64(bigdata.getChessBundle()).getFirst());
         recipe.shape(
@@ -114,6 +129,7 @@ public class RecipeManager {
         recipe.setIngredient('L', Material.LEATHER);
         Bukkit.addRecipe(recipe);
     }
+
     private static void domino(Plugin plugin){
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"dominobundle"),Util.getItemsFromBase64(bigdata.getDominoBundle()).getFirst());
         recipe.shape(
@@ -127,5 +143,20 @@ public class RecipeManager {
         recipe.setIngredient('W',Material.WHITE_DYE);
         recipe.setIngredient('L', Material.LEATHER);
         Bukkit.addRecipe(recipe);
+    }
+
+    private static void chips(Plugin plugin) {
+        HashMap<Material, Integer> variants = ValuesManager.getChipVariants();
+        for (Material mat : variants.keySet()) {
+            ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "chip_" + variants.get(mat)), ItemCreator.getChip(variants.get(mat)));
+            recipe.shape(
+                    " # ",
+                    "#M#",
+                    " # "
+            );
+            recipe.setIngredient('M', mat);
+            recipe.setIngredient('#', Material.GOLD_NUGGET);
+            Bukkit.addRecipe(recipe);
+        }
     }
 }
