@@ -109,3 +109,12 @@ items:
       - 0
       - 0
     basecmd: 33100
+    variants:
+      PAPER: 0
+      EMERALD: 1
+      GOLD_INGOT: 2
+      DIAMOND: 3
+      DEEPSLATE_DIAMOND_ORE: 4
+      DIAMOND_BLOCK: 5
+      NETHERITE_INGOT: 6
+      NETHERITE_BLOCK: 7

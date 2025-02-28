@@ -30,7 +30,6 @@ public final class TablePlays extends JavaPlugin implements Listener {
         instance = this;
         loadConfig();
         new translationManager(translations);
-        ValuesManager.generateChipVariants();
         Bukkit.getServer().getPluginManager().registerEvents(new Listeners(), this);
         RecipeManager.init(this);
         if (isDevAndIsMiniking1000TheBestPlayerInHisMind) {

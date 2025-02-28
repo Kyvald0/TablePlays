@@ -17,6 +17,7 @@ public class ModifierManager {
         MODIFIER_MAP.put(Pattern.compile("FLIP"), new FlipModifier());
         MODIFIER_MAP.put(Pattern.compile("CGRID[1-9]\\d*"), new CGridModifier());
         MODIFIER_MAP.put(Pattern.compile("RANDYAW"), new RandYawModifier());
+        MODIFIER_MAP.put(Pattern.compile("HIDESUB[1-9]\\d*"), new HideSubModifier());
     }
 
     public static void applyModifiers(ModifierContext context, List<String> modifiers) {

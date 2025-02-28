@@ -149,7 +149,7 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(groundStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
+                    if (!executeAction(player, currentTag, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
@@ -161,7 +161,7 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(mainStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
+                    if (!executeAction(player, currentTag, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
@@ -172,14 +172,14 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(offStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
+                    if (!executeAction(player, currentTag, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
     }
     //make a lot of functions to handle actions with card, maybe transport here also some params, maybe in hashmap format, but how to get the obj?
 
-    public static boolean executeAction(Player player, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Vector clicked_position) {
+    public static boolean executeAction(Player player, ActionTagSet all, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Vector clicked_position) {
         switch (action.toUpperCase()) {
             //does nothing by itself, but applies modifiers to everything it can
             case "NOTHING" -> {
@@ -460,6 +460,10 @@ public class Listeners implements Listener {
                     index = 0;
                     toAdd = items.getFirst();
                 }
+                ModifierContext context = new ModifierContext(player, toAdd, null, null, clicked_position);
+                ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
+                tagSet.add(ActionTag.FROM_BUNDLE);
+                ModifierManager.applyModifiers(context, Util.getModifiers(toAdd, tagSet.toString()));
                 items.remove(index);
                 BundleManager.saveItemsToBundle(mainStack, items);
                 HashMap<Integer, ItemStack> left = player.getInventory().addItem(toAdd);

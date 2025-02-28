@@ -146,7 +146,7 @@ public class RecipeManager {
     }
 
     private static void chips(Plugin plugin) {
-        HashMap<Material, Integer> variants = ValuesManager.getChipVariants();
+        HashMap<Material, Integer> variants = ValuesManager.getVariants(Util.ItemTypes.Chip.getValue());
         for (Material mat : variants.keySet()) {
             ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "chip_" + variants.get(mat)), ItemCreator.getChip(variants.get(mat)));
             recipe.shape(
@@ -159,4 +159,6 @@ public class RecipeManager {
             Bukkit.addRecipe(recipe);
         }
     }
+
+    //TODO make bundles for chips
 }

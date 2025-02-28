@@ -14,9 +14,11 @@ import java.util.List;
 
 public class ValuesManager {
 
+    public static HashMap<String, HashMap<Material, Integer>> variants = new HashMap<>();
     public static HashMap<Material, Integer> chips = new HashMap<>();
 
     public static List<Float> getItemHitbox(ItemStack stack) {
+        // width and height in that order
         if (stack == null || stack.getItemMeta() == null || !stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.Item.getValue())) {
             return null;
         }
@@ -101,7 +103,6 @@ public class ValuesManager {
     }
 
     public static void generateChipVariants() {
-        //TODO make it not as specific. Tho I don't think I will without a reason, it does not sound nice to make something as specific as not specific
         HashMap<Material, Integer> map = new HashMap<>();
         if (TablePlays.config.contains("items") && TablePlays.config.contains("items.chip") && TablePlays.config.contains("items.chip.variants")) {
             ConfigurationSection config = TablePlays.config.getConfigurationSection("items.chip.variants");
@@ -111,6 +112,21 @@ public class ValuesManager {
             }
         }
         chips = map;
+    }
+
+    public static HashMap<Material, Integer> getVariants(String type) {
+        if (variants.containsKey(type)) return variants.get(type);
+        // nope, does not have a key.
+        HashMap<Material, Integer> map = new HashMap<>();
+        if (TablePlays.config.contains("items") && TablePlays.config.contains("items." + type) && TablePlays.config.contains("items." + type + ".variants")) {
+            ConfigurationSection config = TablePlays.config.getConfigurationSection("items." + type + ".variants");
+            for (String key : config.getKeys(false)) {
+                if (Material.getMaterial(key) != null) map.put(Material.getMaterial(key), config.getInt(key));
+                else System.out.println("Error while trying to get material for: " + key);
+            }
+        }
+        variants.put(type, map);
+        return map;
     }
 
     public static HashMap<Material, Integer> getChipVariants() {

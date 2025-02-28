@@ -30,7 +30,8 @@ public class Util {
         ON_BLOCK(16),
         ON_AIR(32),
         ON_ITEM(64),
-        WITH_SHIFT(128);
+        WITH_SHIFT(128),
+        FROM_BUNDLE(256);
 
         private final int value;
 
@@ -40,26 +41,6 @@ public class Util {
 
         public int getValue() {
             return value;
-        }
-
-        // Convert a bitwise combination back to an EnumSet
-        public static EnumSet<ActionTag> fromValue(int Value) {
-            EnumSet<ActionTag> set = EnumSet.noneOf(ActionTag.class);
-            for (ActionTag tag : ActionTag.values()) {
-                if ((Value & tag.value) != 0) { // Check if the bit is set
-                    set.add(tag);
-                }
-            }
-            return set;
-        }
-
-        // Combine multiple ActionTags into a single bitwise value
-        public static int combine(ActionTag... tags) {
-            int result = 0;
-            for (ActionTag tag : tags) {
-                result |= tag.value; // Bitwise OR to combine
-            }
-            return result;
         }
 
     }
@@ -121,6 +102,7 @@ public class Util {
         Actions(new NamespacedKey(TablePlays.getPlugin(), "actions")), //string, actions described in another file
         Modifiers(new NamespacedKey(TablePlays.getPlugin(), "modifiers")), //string, all modifiers applied to the actions
         ExtraData(new NamespacedKey(TablePlays.getPlugin(), "extra")), // planned to use for things like hcard, or simular
+
 
         Bundle(new NamespacedKey(TablePlays.getPlugin(), "bundle")), // string, bundle accepted types, e.g. what types of item may be placed inside.
         BundleMeta(new NamespacedKey(TablePlays.getPlugin(), "bundlemeta")), // string of literal of "data", "uuid", then ";" with number, maximum items in the bundle. regex: (data|uuid);[123456789]\d*
