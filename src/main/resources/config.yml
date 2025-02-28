@@ -11,6 +11,9 @@ allow_files: true
 # otherwise - in the item itself
 file_threshold: 36
 
+# the max amount of chips in a single bundle
+chip_bundle_size: 64
+
 
 #DO NOT EDIT UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING
 items:
@@ -30,7 +33,7 @@ items:
       - 0
       - 0
       - 0.25
-      - 0.2
+      - 0.3
       - 0.25
       - 0.7853981634
       - 0
@@ -110,11 +113,13 @@ items:
       - 0
     basecmd: 33100
     variants:
-      PAPER: 0
-      EMERALD: 1
-      GOLD_INGOT: 2
-      DIAMOND: 3
-      DEEPSLATE_DIAMOND_ORE: 4
-      DIAMOND_BLOCK: 5
-      NETHERITE_INGOT: 6
-      NETHERITE_BLOCK: 7
+      GOLD_NUGGET: 10
+      WHITE_DYE: 11
+      LIME_DYE: 12
+      YELLOW_DYE: 13
+      RED_DYE: 14
+      BLUE_DYE: 15
+      MAGENTA_DYE: 16
+      GRAY_DYE: 17
+      ORANGE_DYE: 18
+

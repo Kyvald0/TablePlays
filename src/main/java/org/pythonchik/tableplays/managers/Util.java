@@ -1,6 +1,5 @@
 package org.pythonchik.tableplays.managers;
 
-import org.bukkit.FluidCollisionMode;
 import org.bukkit.util.RayTraceResult;
 import org.pythonchik.tableplays.TablePlays;
 import org.bukkit.Location;
@@ -122,7 +121,7 @@ public class Util {
 
     public enum ItemTypes {
         Dice("dice"),
-        Card("card"), //TODO switch to this, and have dice be pick up from here
+        Card("card"),
         Chip("chip"),
         Bundle("bundle");
         private String value;
@@ -166,7 +165,7 @@ public class Util {
     public static Location getBlockEyeLoc(Player player) {
         Vector direction = player.getEyeLocation().getDirection();
         Location eyeloc = player.getEyeLocation();
-        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
+        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
             eyeloc.add(direction.clone().multiply(0.002));
             if (eyeloc.getBlock().getType() != Material.AIR) {break;}
         }
@@ -187,7 +186,7 @@ public class Util {
     }
 
     public static Vector getClickedPosition(Player player) {
-        RayTraceResult result = player.getWorld().rayTraceBlocks(player.getEyeLocation(), player.getEyeLocation().getDirection(), (int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue());
+        RayTraceResult result = player.getWorld().rayTraceBlocks(player.getEyeLocation(), player.getEyeLocation().getDirection(), (int) player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).getBaseValue());
 
         if (result == null || result.getHitBlock() == null) {
             return null; // No block hit

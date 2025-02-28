@@ -13,6 +13,7 @@ public class HideSubModifier implements BaseModifier {
     public boolean apply(ModifierContext context, String modifier, List<String> allModifiers) {
         // HIDESUB70
         // HIDESUB# with int - what should it be replaced with
+        //TODO test this, and add to modifiermanager if not already
         AtomicBoolean flag = new AtomicBoolean(false);
         context.getItemStack().ifPresent(stack -> {
             if (stack.getItemMeta() != null && stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER)) {

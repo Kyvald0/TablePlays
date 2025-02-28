@@ -71,7 +71,7 @@ public class Listeners implements Listener {
 
 
         // what did he click?
-        if (player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER) != null) {
+        if (player.getTargetBlockExact((int) player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).getBaseValue(), FluidCollisionMode.NEVER) != null) {
             currentTag.add(ActionTag.ON_BLOCK);
         } else {
             currentTag.add(ActionTag.ON_AIR);
@@ -464,6 +464,7 @@ public class Listeners implements Listener {
                 ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
                 tagSet.add(ActionTag.FROM_BUNDLE);
                 ModifierManager.applyModifiers(context, Util.getModifiers(toAdd, tagSet.toString()));
+                //TODO add this to another get from bundle thing, and test it
                 items.remove(index);
                 BundleManager.saveItemsToBundle(mainStack, items);
                 HashMap<Integer, ItemStack> left = player.getInventory().addItem(toAdd);
@@ -572,8 +573,9 @@ public class Listeners implements Listener {
 
         if (itemCount == 1) {
             Material resultMaterial = null;
-            for (Material material : ValuesManager.chips.keySet()) {
-                if (ValuesManager.chips.get(material) == subType) {
+            HashMap<Material, Integer> map = ValuesManager.getVariants(ItemTypes.Chip.getValue());
+            for (Material material : map.keySet()) {
+                if (map.get(material) == subType) {
                     resultMaterial = material;
                     break;
                 }

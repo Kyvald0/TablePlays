@@ -16,6 +16,7 @@ public class PushModifier implements BaseModifier {
         AtomicBoolean flag = new AtomicBoolean(false);
         context.getLocation().ifPresent(spawn_loc -> {
             context.getItemStack().ifPresent(stack -> {
+                //TODO test it. is it even in modifier manager?
                 List<Float> hitbox = ValuesManager.getItemHitbox(stack);
                 boolean adjusted;
                 int maxIterations = 100; // I doubt you will have 100 items stacked on top of each other and you will click on the bottom one.

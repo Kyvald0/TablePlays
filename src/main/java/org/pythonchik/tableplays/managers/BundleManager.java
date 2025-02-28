@@ -9,7 +9,6 @@ import org.pythonchik.tableplays.TablePlays;
 import java.util.*;
 
 public class BundleManager {
-    //TODO test ALL of this
     public static boolean addToBundle(ItemStack bundle, ItemStack item) {
         PersistentDataContainer container = bundle.getItemMeta().getPersistentDataContainer();
         if (!isValidBundle(bundle)) return false;
@@ -59,11 +58,10 @@ public class BundleManager {
         PersistentDataContainer container = bundle.getItemMeta().getPersistentDataContainer();
         if (!container.has(Util.ItemTags.Item.getValue(), PersistentDataType.STRING)) return false; // it's not my item
         if (!container.get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING).equals(Util.ItemTypes.Bundle.getValue())) return false; //it's not a bundle
-        //TODO check that it have BUNDLE tag
+        if (!container.has(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING)) return false; // it's bundle but not bundle?
         if (!container.has(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING)) return false; // does not have necessary meta
         if (!container.has(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING)) return false; // does not have necessary data
         if (!container.get(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).matches("(data|uuid);[123456789]\\d*;(queue|stack|random)")) return false; // meta is in wrong format
-        //TODO check more, I think I forgot something, maybe check that the save method is correct? maybe not?
         return true;
     }
 

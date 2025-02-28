@@ -59,6 +59,7 @@ public class ItemCreator {
         ItemMeta meta = chip.getItemMeta();
         String type = Util.ItemTypes.Chip.getValue();
         if (meta != null){
+            //TODO add new push modifier
             meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
             meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:PLACE_MAIN,146:PLACE_MAIN,66:PLACE_TOP_MAIN,194:PLACE_TOP_MAIN,20:PLACE_LEFT,148:PLACE_LEFT,68:PLACE_TOP_LEFT,196:PLACE_TOP_LEFT");
             meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "18:RANDYAW,18:CGRID4,146:CGRID4,66:ALIGN,66:RANDYAW,194:ALIGN,20:RANDYAW,20:CGRID4,148:CGRID4,68:ALIGN,68:RANDYAW,196:ALIGN"); // ,66:ALIGN
@@ -79,22 +80,20 @@ public class ItemCreator {
         return chip;
     }
 
-    public static ItemStack getChipBundle(int subType) {
-        return null;
-    }
 
-
-    public static ItemStack getEmptyBundle(int size) {
+    public static ItemStack getChipBundle(int subtype) {
         ItemStack bundle = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
         ItemMeta meta = bundle.getItemMeta();
         String type = Util.ItemTypes.Bundle.getValue();
+        int size = ValuesManager.getChipsSize();
         if (meta != null){
+            //TODO change actions here and in regular bundle to pick up item from the ground. maybe I'm wrong, but it does not work with chips
             meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
             meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,194:PLACE_TOP_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,68:GET_FROM_BUNDLE_LEFT,196:PUT_FROM_GROUND,196:PLACE_LEFT,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
-            meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, 0);
-            meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Card.getValue());
-            String saveType = ValuesManager.getSaveType(36); // magical 36 because it's a 36 card deck
-            meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";36;random"); // save in data, as its the smallest deck, 36 cards max, get randomly.
+            meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, subtype);
+            meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Chip.getValue());
+            String saveType = ValuesManager.getSaveType(size); // magical 36 because it's a 36 card deck
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";" + size + ";stack");
             if (saveType.equals("data")) {
                 meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, ""); // generate new bundle
             } else {

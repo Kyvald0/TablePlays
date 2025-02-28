@@ -15,7 +15,6 @@ import java.util.List;
 public class ValuesManager {
 
     public static HashMap<String, HashMap<Material, Integer>> variants = new HashMap<>();
-    public static HashMap<Material, Integer> chips = new HashMap<>();
 
     public static List<Float> getItemHitbox(ItemStack stack) {
         // width and height in that order
@@ -102,16 +101,8 @@ public class ValuesManager {
         return getPitch(type);
     }
 
-    public static void generateChipVariants() {
-        HashMap<Material, Integer> map = new HashMap<>();
-        if (TablePlays.config.contains("items") && TablePlays.config.contains("items.chip") && TablePlays.config.contains("items.chip.variants")) {
-            ConfigurationSection config = TablePlays.config.getConfigurationSection("items.chip.variants");
-            for (String key : config.getKeys(false)) {
-                if (Material.getMaterial(key) != null) map.put(Material.getMaterial(key), config.getInt(key));
-                else System.out.println("Error while trying to get material for: " + key);
-            }
-        }
-        chips = map;
+    public static int getChipsSize() {
+        return TablePlays.config.getInt("chip_bundle_size", 64);
     }
 
     public static HashMap<Material, Integer> getVariants(String type) {
@@ -129,7 +120,4 @@ public class ValuesManager {
         return map;
     }
 
-    public static HashMap<Material, Integer> getChipVariants() {
-        return ValuesManager.chips;
-    }
 }

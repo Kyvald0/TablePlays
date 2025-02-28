@@ -50,6 +50,7 @@ public class translationManager {
         } catch (Exception ignored) {
             lore = translations.getStringList(type + ".lore");
         }
+        //TODO lore fallback sometimes does not work, dont know why, investigate it.
         lore.replaceAll(textToTranslate -> ChatColor.translateAlternateColorCodes('&', textToTranslate));
         lore.replaceAll(textToTranslate -> {
             String translated = ChatColor.translateAlternateColorCodes('&', textToTranslate);

@@ -29,6 +29,7 @@ public class RecipeManager {
         //chess(plugin);
         //domino(plugin);
         chips(plugin);
+        chip_bundles(plugin);
     }
     private static void cards52(Plugin plugin){
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards52bundle"), ItemCreator.get52bundle());
@@ -160,5 +161,21 @@ public class RecipeManager {
         }
     }
 
-    //TODO make bundles for chips
+    private static void chip_bundles(Plugin plugin) {
+        HashMap<Material, Integer> variants = ValuesManager.getVariants(Util.ItemTypes.Bundle.getValue());
+        for (Material mat : variants.keySet()) {
+            ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "cbundle_" + variants.get(mat)), ItemCreator.getChipBundle(variants.get(mat)));
+            recipe.shape(
+                    "#D#",
+                    "#S#",
+                    " L "
+            );
+            recipe.setIngredient('D', mat);
+            recipe.setIngredient('S', Material.STRING);
+            recipe.setIngredient('L', Material.LEATHER);
+            recipe.setIngredient('#', Material.GOLD_NUGGET);
+            Bukkit.addRecipe(recipe);
+        }
+    }
+
 }
