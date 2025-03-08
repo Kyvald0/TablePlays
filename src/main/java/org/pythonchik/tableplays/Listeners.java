@@ -1,6 +1,10 @@
 package org.pythonchik.tableplays;
 
 import org.bukkit.*;
+import org.bukkit.entity.*;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -12,10 +16,6 @@ import org.pythonchik.tableplays.managers.Util;
 import org.pythonchik.tableplays.managers.Util.*;
 import org.pythonchik.tableplays.managers.ValuesManager;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Interaction;
-import org.bukkit.entity.ItemDisplay;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
@@ -30,7 +30,7 @@ public class Listeners implements Listener {
 
     private static HashMap<Player, Long> ItemUses = new HashMap<>();
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL)
     public void OnItemUse(PlayerStatisticIncrementEvent event) {
         // it's not even the right statistic - get out of here!
         if (!event.getStatistic().equals(Statistic.USE_ITEM) || event.getMaterial() == null || !event.getMaterial().equals(Material.WARPED_FUNGUS_ON_A_STICK)) {
@@ -88,7 +88,7 @@ public class Listeners implements Listener {
         handle_action(player, currentTag, currentTag.containsAny(ActionTag.MAIN_HAND, ActionTag.BOTH_HAND) ? mainStack : null, currentTag.containsAny(ActionTag.LEFT_HAND, ActionTag.BOTH_HAND) ? offStack : null, null, clicked_position);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onInteract(PlayerInteractAtEntityEvent event) {
         //We are not interested in non-my-interactions
         if (!event.getRightClicked().getType().equals(EntityType.INTERACTION) || !event.getRightClicked().getPersistentDataContainer().has(ItemTags.Entity.getValue()) || event.getRightClicked().getVehicle() == null || !(event.getRightClicked().getVehicle().getType() == EntityType.ITEM_DISPLAY) || !event.getRightClicked().getVehicle().getPersistentDataContainer().has(ItemTags.Entity.getValue())) {
@@ -180,6 +180,7 @@ public class Listeners implements Listener {
     //make a lot of functions to handle actions with card, maybe transport here also some params, maybe in hashmap format, but how to get the obj?
 
     public static boolean executeAction(Player player, ActionTagSet all, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Vector clicked_position) {
+        //returns True if you need to continue the execution, and false it the action if final.
         switch (action.toUpperCase()) {
             //does nothing by itself, but applies modifiers to everything it can
             case "NOTHING" -> {
@@ -190,7 +191,7 @@ public class Listeners implements Listener {
                     ModifierContext context = new ModifierContext(player, offStack, interaction, null, clicked_position);
                     ModifierManager.applyModifiers(context, modifiers);
                 } else {
-                    ModifierContext context = new ModifierContext(player, null, interaction, null, clicked_position);
+                    ModifierContext context = new ModifierContext(player, ((ItemDisplay) interaction.getVehicle()).getItemStack(), interaction, null, clicked_position);
                     ModifierManager.applyModifiers(context, modifiers);
                 }
                 return true;
@@ -398,6 +399,12 @@ public class Listeners implements Listener {
                 ModifierContext context = new ModifierContext(player, single_item, null, null, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
 
+                ModifierContext context2 = new ModifierContext(player, single_item, null, null, clicked_position);
+                ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
+                tagSet.add(ActionTag.TO_BUNDLE);
+                tagSet.add(ActionTag.BOTH_HAND);
+                ModifierManager.applyModifiers(context2, Util.getModifiers(single_item, tagSet.toString()));
+
                 boolean result = BundleManager.addToBundle(offStack, single_item);
                 if (result) {
                     mainStack.setAmount(mainStack.getAmount()-1);
@@ -424,6 +431,12 @@ public class Listeners implements Listener {
 
                 ModifierContext context = new ModifierContext(player, single_item, null, null, clicked_position);
                 ModifierManager.applyModifiers(context, modifiers);
+
+                ModifierContext context2 = new ModifierContext(player, single_item, null, null, clicked_position);
+                ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
+                tagSet.add(ActionTag.TO_BUNDLE);
+                tagSet.add(ActionTag.ON_ITEM);
+                ModifierManager.applyModifiers(context2, Util.getModifiers(single_item, tagSet.toString()));
 
                 boolean result = BundleManager.addToBundle(offStack, single_item);
                 if (result) {
@@ -464,7 +477,6 @@ public class Listeners implements Listener {
                 ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
                 tagSet.add(ActionTag.FROM_BUNDLE);
                 ModifierManager.applyModifiers(context, Util.getModifiers(toAdd, tagSet.toString()));
-                //TODO add this to another get from bundle thing, and test it
                 items.remove(index);
                 BundleManager.saveItemsToBundle(mainStack, items);
                 HashMap<Integer, ItemStack> left = player.getInventory().addItem(toAdd);
@@ -586,4 +598,45 @@ public class Listeners implements Listener {
         }
     }
 
+    @EventHandler
+    public static void ItemDespawnListener(ItemDespawnEvent event) {
+        if (!BundleManager.isValidBundle(event.getEntity().getItemStack())) {
+            //its not the bundle - ignore
+            return;
+        }
+        if (!event.getEntity().getItemStack().getItemMeta().getPersistentDataContainer().get(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).startsWith("uuid")) {
+            // its data bundle - ignore
+            return;
+        }
+        if (!TablePlays.data.contains(event.getEntity().getItemStack().getItemMeta().getPersistentDataContainer().get(ItemTags.BundleData.getValue(), PersistentDataType.STRING))) {
+            // no data on the server anyway, dont bother
+            return;
+        }
+        // remove the value from the server if item is deleted
+        TablePlays.data.set(event.getEntity().getItemStack().getItemMeta().getPersistentDataContainer().get(ItemTags.BundleData.getValue(), PersistentDataType.STRING), null);
+    }
+
+    @EventHandler
+    public static void ItemKillLitener(EntityDeathEvent event) {
+        if (event.getEntity().getType() != EntityType.ITEM) {
+            //its not item how is dead
+            return;
+        }
+        ItemStack stack = ((Item) event.getEntity()).getItemStack();
+        if (!BundleManager.isValidBundle(stack)) {
+            //its not the bundle - ignore
+            return;
+        }
+        if (!stack.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).startsWith("uuid")) {
+            // its data bundle - ignore
+            return;
+        }
+        if (!TablePlays.data.contains(stack.getItemMeta().getPersistentDataContainer().get(ItemTags.BundleData.getValue(), PersistentDataType.STRING))) {
+            // no data on the server anyway, dont bother
+            return;
+        }
+        // remove the value from the server if item is deleted
+        TablePlays.data.set(stack.getItemMeta().getPersistentDataContainer().get(ItemTags.BundleData.getValue(), PersistentDataType.STRING), null);
+
+    }
 }

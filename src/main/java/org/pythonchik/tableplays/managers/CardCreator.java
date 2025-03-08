@@ -16,7 +16,7 @@ public class CardCreator {
         String type = Util.ItemTypes.Bundle.getValue();
         if (meta != null){
             meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
-            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,194:PLACE_TOP_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,68:GET_FROM_BUNDLE_LEFT,196:PUT_FROM_GROUND,196:PLACE_LEFT,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,66:GET_FROM_BUNDLE_MAIN,194:GET_FROM_BUNDLE_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,196:PUT_FROM_GROUND,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
             meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, 0);
             meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Card.getValue());
             String saveType = ValuesManager.getSaveType(36); // magical 36 because it's a 36 card deck
@@ -45,7 +45,7 @@ public class CardCreator {
         String type = Util.ItemTypes.Bundle.getValue();
         if (meta != null){
             meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
-            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,194:PLACE_TOP_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,68:GET_FROM_BUNDLE_LEFT,196:PUT_FROM_GROUND,196:PLACE_LEFT,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,66:GET_FROM_BUNDLE_MAIN,194:GET_FROM_BUNDLE_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,196:PUT_FROM_GROUND,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
             meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, 0); // 0, cards bundle, may just be null for this case
             meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Card.getValue());
             String saveType = ValuesManager.getSaveType(52); // magical 52 because it's a 52 card deck
@@ -74,7 +74,7 @@ public class CardCreator {
         String type = Util.ItemTypes.Bundle.getValue();
         if (meta != null){
             meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
-            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,194:PLACE_TOP_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,68:GET_FROM_BUNDLE_LEFT,196:PUT_FROM_GROUND,196:PLACE_LEFT,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,66:GET_FROM_BUNDLE_MAIN,194:GET_FROM_BUNDLE_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,196:PUT_FROM_GROUND,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
             meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, 0);
             meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Card.getValue());
             String saveType = ValuesManager.getSaveType(54); // magical 54 because it's a 54 card deck
@@ -125,8 +125,8 @@ public class CardCreator {
                 cards.add(getCard(j*20+i));
             }
         }
-        cards.add(getCard(80));
-        cards.add(getCard(80));
+        cards.add(getCard(75));
+        cards.add(getCard(75));
         return cards;
     }
 
@@ -137,8 +137,8 @@ public class CardCreator {
         String type = Util.ItemTypes.Card.getValue();
         if (meta != null) {
             meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
-            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "193:NOTHING,146:NOTHING,194:NOTHING,148:NOTHING,196:NOTHING,65:PICK_UP,18:PLACE_MAIN,146:PLACE_MAIN,66:PLACE_TOP_MAIN,194:PLACE_TOP_MAIN,20:PLACE_LEFT,148:PLACE_LEFT,68:PLACE_TOP_LEFT,196:PLACE_TOP_LEFT");
-            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "193:FLIP,146:FLIP,194:FLIP,148:FLIP,196:FLIP");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:NOTHING,18:PLACE_MAIN,146:PLACE_MAIN,66:PLACE_TOP_MAIN,194:NOTHING,194:PLACE_TOP_MAIN,20:PLACE_LEFT,148:PLACE_LEFT,68:PLACE_TOP_LEFT,196:PLACE_TOP_LEFT");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "384:HIDESUB80,520:REVSUB,648:REVSUB,193:REVSUB,193:FLIP,146:FLIP,66:REVSUB,194:FLIP,20:REVSUB,148:FLIP,68:REVSUB,196:FLIP,18:REVSUB,65:REVSUB");
             meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, subType);
             //set 1, to use tags later.
             card.setItemMeta(meta);

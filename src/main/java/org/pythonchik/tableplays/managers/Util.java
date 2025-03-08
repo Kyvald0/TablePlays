@@ -30,7 +30,8 @@ public class Util {
         ON_AIR(32),
         ON_ITEM(64),
         WITH_SHIFT(128),
-        FROM_BUNDLE(256);
+        FROM_BUNDLE(256),
+        TO_BUNDLE(512);
 
         private final int value;
 
@@ -104,7 +105,7 @@ public class Util {
 
 
         Bundle(new NamespacedKey(TablePlays.getPlugin(), "bundle")), // string, bundle accepted types, e.g. what types of item may be placed inside.
-        BundleMeta(new NamespacedKey(TablePlays.getPlugin(), "bundlemeta")), // string of literal of "data", "uuid", then ";" with number, maximum items in the bundle. regex: (data|uuid);[123456789]\d*
+        BundleMeta(new NamespacedKey(TablePlays.getPlugin(), "bundlemeta")), //NOT FACTS check BundleManager.isValidBundle for more accurate meta format. string of literal of "data", "uuid", then ";" with number, maximum items in the bundle. regex: (data|uuid);[123456789]\d*
         BundleData(new NamespacedKey(TablePlays.getPlugin(), "bundledata")); // string, the uuid if save is server side, or base64 string with arraylist of item if saved localy;
 
         private final NamespacedKey value;
@@ -123,7 +124,8 @@ public class Util {
         Dice("dice"),
         Card("card"),
         Chip("chip"),
-        Bundle("bundle");
+        Bundle("bundle"),
+        Domino("domino");
         private String value;
         ItemTypes(String value) {
             this.value = value;

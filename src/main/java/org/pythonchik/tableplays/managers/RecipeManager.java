@@ -27,7 +27,7 @@ public class RecipeManager {
         //checkers(plugin);
         //board(plugin);
         //chess(plugin);
-        //domino(plugin);
+        domino(plugin);
         chips(plugin);
         chip_bundles(plugin);
     }
@@ -132,7 +132,7 @@ public class RecipeManager {
     }
 
     private static void domino(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"dominobundle"),Util.getItemsFromBase64(bigdata.getDominoBundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"dominobundle"), ItemCreator.getDomino());
         recipe.shape(
                 " M ",
                 "WSB",

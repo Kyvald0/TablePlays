@@ -29,8 +29,12 @@ public class commands implements CommandExecutor {
                 player.getInventory().addItem(ItemCreator.get36bundle());
                 player.getInventory().addItem(ItemCreator.get52bundle());
                 player.getInventory().addItem(ItemCreator.get54bundle());
+                player.getInventory().addItem(ItemCreator.getDomino());
                 for (int i=0; i <= 7; i++) {
                     player.getInventory().addItem(ItemCreator.getChip(i));
+                }
+                for (int i=10; i <= 18; i++) {
+                    player.getInventory().addItem(ItemCreator.getChipBundle(i));
                 }
             }
         }
