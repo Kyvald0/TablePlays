@@ -125,6 +125,9 @@ public class Util {
         Card("card"),
         Chip("chip"),
         Bundle("bundle"),
+        Board("board"),
+        Checker("checker"),
+        Chess("chess"),
         Domino("domino");
         private String value;
         ItemTypes(String value) {

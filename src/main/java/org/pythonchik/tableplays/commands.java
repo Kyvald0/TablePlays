@@ -26,6 +26,9 @@ public class commands implements CommandExecutor {
             } else {
                 Player player = (Player) sender;
                 player.getInventory().addItem(ItemCreator.getDice());
+                player.getInventory().addItem(ItemCreator.getBoard());
+                player.getInventory().addItem(ItemCreator.getCheckers());
+                player.getInventory().addItem(ItemCreator.getChess());
                 player.getInventory().addItem(ItemCreator.get36bundle());
                 player.getInventory().addItem(ItemCreator.get52bundle());
                 player.getInventory().addItem(ItemCreator.get54bundle());

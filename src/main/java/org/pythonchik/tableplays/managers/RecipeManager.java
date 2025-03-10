@@ -1,36 +1,79 @@
 package org.pythonchik.tableplays.managers;
 
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
-import org.bukkit.inventory.CraftingInventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.pythonchik.tableplays.TablePlays;
-import org.pythonchik.tableplays.bigdata;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.Plugin;
+import org.pythonchik.tableplays.TablePlays;
 
 import java.util.HashMap;
 
 public class RecipeManager {
-    public static void init(Plugin plugin){
-        cards52(plugin);
-        cards36(plugin);
-        cards54(plugin);
+    public static void init(Plugin plugin) {
         dice(plugin);
-        //checkers(plugin);
-        //board(plugin);
-        //chess(plugin);
+        board(plugin);
+
+        // these 6 need to fill after crafting
+        TablePlays.data.set("default.card36", Util.convertItemsToBase64(CardCreator.get36Deck()));
+        TablePlays.data.set("default.card52", Util.convertItemsToBase64(CardCreator.get52Deck()));
+        TablePlays.data.set("default.card54", Util.convertItemsToBase64(CardCreator.get54Deck()));
+        TablePlays.data.set("default.checker", Util.convertItemsToBase64(ItemCreator.getCheckerDeck()));
+        TablePlays.data.set("default.chess", Util.convertItemsToBase64(ItemCreator.getChessDeck()));
+        TablePlays.data.set("default.domino", Util.convertItemsToBase64(ItemCreator.getDominoDeck()));
+        cards36(plugin);
+        cards52(plugin);
+        cards54(plugin);
+
+        checkers(plugin);
+        chess(plugin);
         domino(plugin);
+        // --- end of those 6 ---
+
         chips(plugin);
         chip_bundles(plugin);
     }
+
+    private static void dice(Plugin plugin) {
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "dice"), ItemCreator.getDice());
+        recipe.shape(
+                " W ",
+                "ABA",
+                " b "
+        );
+        recipe.setIngredient('W', Material.WHITE_DYE);
+        recipe.setIngredient('A', Material.AMETHYST_SHARD);
+        recipe.setIngredient('B', Material.BONE_BLOCK);
+        recipe.setIngredient('b', Material.BLACK_DYE);
+        Bukkit.addRecipe(recipe);
+    }
+
+    private static void board(Plugin plugin){
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"board"), ItemCreator.getBoard());
+        recipe.shape(
+                "BS",
+                "SB"
+        );
+        recipe.setIngredient('B', Material.BIRCH_SLAB);
+        recipe.setIngredient('S',Material.DARK_OAK_SLAB);
+        Bukkit.addRecipe(recipe);
+    }
+
+    private static void cards36(Plugin plugin){
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards56bundle"), ItemCreator.get36bundle());
+        recipe.shape(
+                "PPP",
+                "BSR",
+                " L "
+        );
+        recipe.setIngredient('P', Material.PAPER);
+        recipe.setIngredient('R',Material.RED_DYE);
+        recipe.setIngredient('S', Material.STRING);
+        recipe.setIngredient('B',Material.BLACK_DYE);
+        recipe.setIngredient('L', Material.LEATHER);
+        Bukkit.addRecipe(recipe);
+    }
+
     private static void cards52(Plugin plugin){
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards52bundle"), ItemCreator.get52bundle());
         recipe.shape(
@@ -50,74 +93,34 @@ public class RecipeManager {
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards54bundle"), ItemCreator.get54bundle());
         recipe.shape(
                 "PPP",
-                "RLB",
-                "RSB"
+                "RSB",
+                "RLB"
         );
         recipe.setIngredient('P', Material.PAPER);
         recipe.setIngredient('R',Material.RED_DYE);
         recipe.setIngredient('S', Material.STRING);
         recipe.setIngredient('B',Material.BLACK_DYE);
         recipe.setIngredient('L', Material.LEATHER);
-        Bukkit.addRecipe(recipe);
-    }
-
-    private static void cards36(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards56bundle"), ItemCreator.get36bundle());
-        recipe.shape(
-                "PPP",
-                "BSR",
-                " L "
-        );
-        recipe.setIngredient('P', Material.PAPER);
-        recipe.setIngredient('R',Material.RED_DYE);
-        recipe.setIngredient('S', Material.STRING);
-        recipe.setIngredient('B',Material.BLACK_DYE);
-        recipe.setIngredient('L', Material.LEATHER);
-        Bukkit.addRecipe(recipe);
-    }
-
-    private static void dice(Plugin plugin) {
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "dice"), ItemCreator.getDice());
-        recipe.shape(
-                " W ",
-                "ABA",
-                " b "
-        );
-        recipe.setIngredient('W', Material.WHITE_DYE);
-        recipe.setIngredient('A', Material.AMETHYST_SHARD);
-        recipe.setIngredient('B', Material.BONE_BLOCK);
-        recipe.setIngredient('b', Material.BLACK_DYE);
         Bukkit.addRecipe(recipe);
     }
 
     private static void checkers(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"checkersbundle"),Util.getItemsFromBase64(bigdata.getCheckersBundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"checkersbundle"), ItemCreator.getCheckers());
         recipe.shape(
                 " Q ",
-                "YSB",
+                "WSB",
                 " L "
         );
         recipe.setIngredient('Q', Material.QUARTZ_BLOCK);
         recipe.setIngredient('B',Material.BLACK_DYE);
         recipe.setIngredient('S', Material.STRING);
-        recipe.setIngredient('Y',Material.YELLOW_DYE);
+        recipe.setIngredient('W',Material.WHITE_DYE);
         recipe.setIngredient('L', Material.LEATHER);
         Bukkit.addRecipe(recipe);
     }
 
-    private static void board(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"board"),Util.getItemsFromBase64(bigdata.getBoard()).getFirst());
-        recipe.shape(
-                "BS",
-                "SB"
-        );
-        recipe.setIngredient('B', Material.BIRCH_SLAB);
-        recipe.setIngredient('S',Material.DARK_OAK_SLAB);
-        Bukkit.addRecipe(recipe);
-    }
-
     private static void chess(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"chessbundle"),Util.getItemsFromBase64(bigdata.getChessBundle()).getFirst());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"chessbundle"), ItemCreator.getChess());
         recipe.shape(
                 "WQB",
                 "WSB",
@@ -138,7 +141,7 @@ public class RecipeManager {
                 "WSB",
                 " L "
         );
-        recipe.setIngredient('M', Material.MANGROVE_LOG);
+        recipe.setIngredient('M', Material.BONE_BLOCK);
         recipe.setIngredient('B',Material.BLACK_DYE);
         recipe.setIngredient('S', Material.STRING);
         recipe.setIngredient('W',Material.WHITE_DYE);

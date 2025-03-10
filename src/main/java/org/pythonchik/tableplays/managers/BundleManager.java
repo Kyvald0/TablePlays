@@ -10,8 +10,8 @@ import java.util.*;
 
 public class BundleManager {
     public static boolean addToBundle(ItemStack bundle, ItemStack item) {
-        PersistentDataContainer container = bundle.getItemMeta().getPersistentDataContainer();
         if (!isValidBundle(bundle)) return false;
+        PersistentDataContainer container = bundle.getItemMeta().getPersistentDataContainer();
         String[] types = container.get(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING).split(",");
         String[] meta = container.get(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).split(";");
         if (!Arrays.asList(types).contains(item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING))) {
@@ -42,7 +42,16 @@ public class BundleManager {
     public static boolean saveItemsToBundle(ItemStack bundle, String base64) {
         String type = bundle.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING).split(";")[0];
         if (type.equals("uuid")) {
-            TablePlays.data.set(bundle.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING), base64);
+            // so you can't write anything to default.
+            if (bundle.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING).matches("default.*")) {
+                String uuid = UUID.randomUUID().toString();
+                ItemMeta metaamphetamine = bundle.getItemMeta();
+                metaamphetamine.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, uuid);
+                bundle.setItemMeta(metaamphetamine);
+                TablePlays.data.set(uuid, base64);
+            } else {
+                TablePlays.data.set(bundle.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING), base64);
+            }
         } else {
             ItemMeta meta = bundle.getItemMeta();
             meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, base64);

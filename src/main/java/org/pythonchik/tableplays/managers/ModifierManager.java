@@ -13,7 +13,10 @@ public class ModifierManager {
     static {
         //make them sorted as I have classes in IDE
         MODIFIER_MAP.put(Pattern.compile("ALIGN"), new AlignModifier());
+        MODIFIER_MAP.put(Pattern.compile("BLGRID[1-9]\\d*"), new BLGRIDModifier());
         MODIFIER_MAP.put(Pattern.compile("CGRID[1-9]\\d*"), new CGridModifier());
+        MODIFIER_MAP.put(Pattern.compile("ECGRID[1-9]\\d*"), new ECGridModifier());
+        MODIFIER_MAP.put(Pattern.compile("ERT[1-9]\\d*"), new EntityRotateModifier());
         MODIFIER_MAP.put(Pattern.compile("FLIP"), new FlipModifier());
         MODIFIER_MAP.put(Pattern.compile("HIDESUB[1-9]\\d*"), new HideSubModifier());
         MODIFIER_MAP.put(Pattern.compile("PUSH"), new PushModifier());
@@ -22,6 +25,7 @@ public class ModifierManager {
         MODIFIER_MAP.put(Pattern.compile("RESETCMD"), new ResetCMDModifier());
         MODIFIER_MAP.put(Pattern.compile("REVSUB"), new RevealSubModifier());
         MODIFIER_MAP.put(Pattern.compile("ROT[1-9]\\d*"), new RotateModifier());
+        MODIFIER_MAP.put(Pattern.compile("SHIFT[1-9]\\d*"), new ShiftCMDModifier());
     }
 
     public static void applyModifiers(ModifierContext context, List<String> modifiers) {

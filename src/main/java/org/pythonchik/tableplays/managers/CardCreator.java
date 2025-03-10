@@ -6,7 +6,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 public class CardCreator {
 
@@ -21,11 +20,14 @@ public class CardCreator {
             meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Card.getValue());
             String saveType = ValuesManager.getSaveType(36); // magical 36 because it's a 36 card deck
             meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";36;random"); // save in data, as its the smallest deck, 36 cards max, get randomly.
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.card36"); // generate new bundle
+            /*
             if (saveType.equals("data")) {
                 meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, ""); // generate new bundle
             } else {
-                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, UUID.randomUUID().toString()); // generate new bundle
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.card36"); // generate new bundle
             }
+             */
             bundle.setItemMeta(meta);
 
             meta.setCustomModelData(ValuesManager.getBaseCMD(bundle));
@@ -50,11 +52,14 @@ public class CardCreator {
             meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Card.getValue());
             String saveType = ValuesManager.getSaveType(52); // magical 52 because it's a 52 card deck
             meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";52;random"); // save in data, as it's the smallest deck, 36 cards max, get randomly.
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.card52"); // generate new bundle
+            /*
             if (saveType.equals("data")) {
                 meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, ""); // generate new bundle
             } else {
-                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, UUID.randomUUID().toString()); // generate new bundle
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.card52"); // generate new bundle
             }
+            */
             bundle.setItemMeta(meta);
 
             meta.setCustomModelData(ValuesManager.getBaseCMD(bundle));
@@ -79,11 +84,14 @@ public class CardCreator {
             meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Card.getValue());
             String saveType = ValuesManager.getSaveType(54); // magical 54 because it's a 54 card deck
             meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";54;random"); // save in data, as its the smallest deck, 54 cards max, get randomly.
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.card54"); // generate new bundle
+            /*
             if (saveType.equals("data")) {
                 meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, ""); // generate new bundle
             } else {
-                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, UUID.randomUUID().toString()); // generate new bundle
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.card54"); // generate new bundle
             }
+             */
             bundle.setItemMeta(meta);
 
             meta.setCustomModelData(ValuesManager.getBaseCMD(bundle));

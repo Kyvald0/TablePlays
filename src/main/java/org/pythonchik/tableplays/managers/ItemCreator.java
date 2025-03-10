@@ -4,11 +4,17 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.checkerframework.checker.units.qual.A;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class ItemCreator {
     // new iteration of big data, better and not so big :(
+
+    public static ItemStack getNull() {
+        return new ItemStack(Material.AIR);
+    }
 
     public static ItemStack getDice() {
         ItemStack dice = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
@@ -36,23 +42,45 @@ public class ItemCreator {
         return dice;
     }
 
+    public static ItemStack getBoard() {
+        ItemStack board = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
+        ItemMeta meta = board.getItemMeta();
+        String type = Util.ItemTypes.Board.getValue();
+        if (meta != null){
+            meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "18:PLACE_MAIN,20:PLACE_LEFT,146:PLACE_MAIN,148:PLACE_LEFT,65:PICK_UP");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "18:BLGRID1,20:BLGRID1,146:BLGRID1,148:BLGRID1,18:ROT90,20:ROT90,146:ROT90,148:ROT90,65:PROTECT");
+
+            board.setItemMeta(meta);
+
+            meta.setCustomModelData(ValuesManager.getBaseCMD(board));
+            meta.setMaxStackSize(ValuesManager.getMaxStack(type));
+            //more values form config?
+
+            translationManager manager = translationManager.getInstance();
+
+            meta.setLore(manager.getLore(board));
+            meta.setDisplayName(manager.getName(board));
+
+        }
+
+        board.setItemMeta(meta);
+        return board;
+    }
+
+
     public static ItemStack get36bundle() {
-        ItemStack bundle = CardCreator.getEmpty36bundle();
-        BundleManager.saveItemsToBundle(bundle, CardCreator.get36Deck());
-        return bundle;
+        return CardCreator.getEmpty36bundle();
     }
 
     public static ItemStack get52bundle() {
-        ItemStack bundle = CardCreator.getEmpty52bundle();
-        BundleManager.saveItemsToBundle(bundle, CardCreator.get52Deck());
-        return bundle;
+        return CardCreator.getEmpty52bundle();
     }
 
     public static ItemStack get54bundle() {
-        ItemStack bundle = CardCreator.getEmpty54bundle();
-        BundleManager.saveItemsToBundle(bundle, CardCreator.get54Deck());
-        return bundle;
+        return CardCreator.getEmpty54bundle();
     }
+
 
     public static ItemStack getChip(int subType) {
         ItemStack chip = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
@@ -78,7 +106,6 @@ public class ItemCreator {
         chip.setItemMeta(meta);
         return chip;
     }
-
 
     public static ItemStack getChipBundle(int subtype) {
         ItemStack bundle = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
@@ -110,6 +137,7 @@ public class ItemCreator {
         return bundle;
     }
 
+
     public static ItemStack getDomino() {
         ItemStack bundle = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
         ItemMeta meta = bundle.getItemMeta();
@@ -122,11 +150,14 @@ public class ItemCreator {
             meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Domino.getValue());
             String saveType = ValuesManager.getSaveType(size);
             meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";" + size + ";random");
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.domino"); // generate new bundle
+            /*
             if (saveType.equals("data")) {
                 meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, ""); // generate new bundle
             } else {
                 meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, UUID.randomUUID().toString()); // generate new bundle
             }
+             */
             bundle.setItemMeta(meta);
 
             meta.setCustomModelData(ValuesManager.getBaseCMD(bundle));
@@ -137,15 +168,15 @@ public class ItemCreator {
             meta.setDisplayName(manager.getName(bundle));
         }
         bundle.setItemMeta(meta);
-        // now we have bundle, fill it
-        fillDominoBundle(bundle);
         return bundle;
     }
 
-    public static void fillDominoBundle(ItemStack bundle) {
+    public static ArrayList<ItemStack> getDominoDeck() {
+        ArrayList<ItemStack> result = new ArrayList<>();
         for (int i = 0; i < 28; i++) {
-            BundleManager.addToBundle(bundle, getDomino(i));
+            result.add(getDomino(i));
         }
+        return result;
     }
 
     public static ItemStack getDomino(int subType) {
@@ -155,7 +186,7 @@ public class ItemCreator {
         if (meta != null) {
             meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
             meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:NOTHING,18:PLACE_MAIN,146:PLACE_MAIN,20:PLACE_LEFT,148:PLACE_LEFT");
-            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "193:ROT90,18:ROT90,18:CGRID6,146:ROT90,146:CGRID6,20:ROT90,20:CGRID6,148:ROT90,148:CGRID6");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "193:ERT90,18:ROT90,18:CGRID6,146:ROT90,146:CGRID6,20:ROT90,20:CGRID6,148:ROT90,148:CGRID6");
             meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, subType);
             domino.setItemMeta(meta);
             meta.setCustomModelData(ValuesManager.getBaseCMD(domino));
@@ -171,5 +202,154 @@ public class ItemCreator {
 
         domino.setItemMeta(meta);
         return domino;
+    }
+
+
+    public static ItemStack getCheckers() {
+        ItemStack bundle = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
+        ItemMeta meta = bundle.getItemMeta();
+        String type = Util.ItemTypes.Bundle.getValue();
+        int size = 24; // standard checker size
+        if (meta != null){
+            meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,66:GET_FROM_BUNDLE_MAIN,194:GET_FROM_BUNDLE_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,196:PUT_FROM_GROUND,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
+            meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, 3);
+            meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Checker.getValue());
+            String saveType = ValuesManager.getSaveType(size);
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";" + size + ";stack");
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.checker"); // generate new bundle
+            /*
+            if (saveType.equals("data")) {
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, ""); // generate new bundle
+            } else {
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, UUID.randomUUID().toString()); // generate new bundle
+            }
+            */
+            bundle.setItemMeta(meta);
+
+            meta.setCustomModelData(ValuesManager.getBaseCMD(bundle));
+            meta.setMaxStackSize(ValuesManager.getMaxStack(type));
+
+            translationManager manager = translationManager.getInstance();
+            meta.setLore(manager.getLore(bundle));
+            meta.setDisplayName(manager.getName(bundle));
+        }
+        bundle.setItemMeta(meta);
+        // now we have bundle, fill it
+        //fillCheckersBundle(bundle);
+        return bundle;
+    }
+
+    public static ArrayList<ItemStack> getCheckerDeck() {
+        ArrayList<ItemStack> result = new ArrayList<>();
+
+        for (int i = 0; i < 12; i++) {
+            result.add(getChecker(1));
+        }
+        for (int i = 0; i < 12; i++) {
+            result.add(getChecker(2));
+        }
+        return result;
+    }
+
+    public static ItemStack getChecker(int subType) {
+        ItemStack checker = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
+        ItemMeta meta = checker.getItemMeta();
+        String type = Util.ItemTypes.Checker.getValue();
+        if (meta != null) {
+            meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,66:PLACE_TOP_MAIN,194:PLACE_TOP_MAIN,148:PLACE_LEFT,68:PLACE_TOP_LEFT,196:PLACE_TOP_MAIN");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "576:RESETCMD,704:RESETCMD,520:RESETCMD,648:RESETCMD,66:ECGRID10,66:ROT90,194:ECGRID10,194:ROT90,194:SHIFT2,148:SHIFT2,148:ECGRID10,148:RESETCMD,68:ECGRID10,68:ROT90,196:ECGRID10,196:ROT90,196:SHIFT2");
+            meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, subType);
+            checker.setItemMeta(meta);
+            meta.setCustomModelData(ValuesManager.getBaseCMD(checker));
+            meta.setMaxStackSize(ValuesManager.getMaxStack(type));
+            //more values form config?
+
+            translationManager manager = translationManager.getInstance();
+
+            meta.setLore(manager.getLore(checker));
+            meta.setDisplayName(manager.getName(checker));
+        }
+
+        checker.setItemMeta(meta);
+        return checker;
+    }
+
+
+    public static ItemStack getChess() {
+        ItemStack bundle = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
+        ItemMeta meta = bundle.getItemMeta();
+        String type = Util.ItemTypes.Bundle.getValue();
+        int size = 32; // standard chess set size
+        if (meta != null){
+            meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,18:GET_FROM_BUNDLE_MAIN,146:PLACE_MAIN,34:GET_FROM_BUNDLE_MAIN,162:GET_FROM_BUNDLE_MAIN,66:GET_FROM_BUNDLE_MAIN,194:GET_FROM_BUNDLE_MAIN,20:GET_FROM_BUNDLE_LEFT,148:PLACE_LEFT,36:GET_FROM_BUNDLE_LEFT,164:GET_FROM_BUNDLE_LEFT,68:PUT_FROM_GROUND,196:PUT_FROM_GROUND,24:PUT_FROM_MAIN,24:GET_FROM_BUNDLE_MAIN,152:PUT_FROM_MAIN,152:GET_FROM_BUNDLE_MAIN,40:PUT_FROM_MAIN,168:PUT_FROM_MAIN,72:PUT_FROM_MAIN,72:PUT_FROM_GROUND,200:PUT_FROM_MAIN,200:PUT_FROM_GROUND");
+            meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, 2);
+            meta.getPersistentDataContainer().set(Util.ItemTags.Bundle.getValue(), PersistentDataType.STRING, Util.ItemTypes.Chess.getValue());
+            String saveType = ValuesManager.getSaveType(size);
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";" + size + ";queue");
+            meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "default.chess"); // generate new bundle
+            /*
+            if (saveType.equals("data")) {
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, ""); // generate new bundle
+            } else {
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, UUID.randomUUID().toString()); // generate new bundle
+            }
+             */
+            bundle.setItemMeta(meta);
+
+            meta.setCustomModelData(ValuesManager.getBaseCMD(bundle));
+            meta.setMaxStackSize(ValuesManager.getMaxStack(type));
+
+            translationManager manager = translationManager.getInstance();
+            meta.setLore(manager.getLore(bundle));
+            meta.setDisplayName(manager.getName(bundle));
+        }
+        bundle.setItemMeta(meta);
+        return bundle;
+    }
+
+    public static ArrayList<ItemStack> getChessDeck() {
+        ArrayList<ItemStack> result = new ArrayList<>();
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 8; i++) {
+                result.add(getChessPiece(1+j)); // pawn
+            }
+            result.add(getChessPiece(3+j)); // de rook
+            result.add(getChessPiece(5+j)); // knight
+            result.add(getChessPiece(7+j)); // bishop
+            result.add(getChessPiece(9+j)); // queen
+            result.add(getChessPiece(11+j)); // king
+            result.add(getChessPiece(7+j)); // bishop
+            result.add(getChessPiece(5+j)); // knight
+            result.add(getChessPiece(3+j)); // de rook
+        }
+        return result;
+    }
+
+    public static ItemStack getChessPiece(int subType) {
+        ItemStack chess = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
+        ItemMeta meta = chess.getItemMeta();
+        String type = Util.ItemTypes.Chess.getValue();
+        if (meta != null) {
+            meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
+            meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:PICK_UP,66:PLACE_TOP_MAIN,194:PLACE_TOP_MAIN,148:PLACE_LEFT,68:PLACE_TOP_LEFT,196:PLACE_TOP_MAIN");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "66:ECGRID10,66:ROT90,194:ECGRID10,194:ROT90,148:ECGRID10,68:ECGRID10,68:ROT90,196:ECGRID10,196:ROT90");
+            meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, subType);
+            chess.setItemMeta(meta);
+            meta.setCustomModelData(ValuesManager.getBaseCMD(chess));
+            meta.setMaxStackSize(ValuesManager.getMaxStack(type));
+            //more values form config?
+
+            translationManager manager = translationManager.getInstance();
+
+            meta.setLore(manager.getLore(chess));
+            meta.setDisplayName(manager.getName(chess));
+
+        }
+
+        chess.setItemMeta(meta);
+        return chess;
     }
 }
