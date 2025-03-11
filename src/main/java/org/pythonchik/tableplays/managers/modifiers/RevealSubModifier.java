@@ -37,8 +37,8 @@ public class RevealSubModifier implements BaseModifier {
                 stack.setItemMeta(meta);
                 meta.setCustomModelData(ValuesManager.getBaseCMD(stack));
                 stack.setItemMeta(meta);
-                if (context.getInteraction().isPresent() && context.getInteraction().get().getVehicle() != null && context.getInteraction().get().getVehicle().getType().equals(EntityType.ITEM_DISPLAY)) {
-                    ((ItemDisplay) context.getInteraction().get().getVehicle()).setItemStack(stack);
+                if (context.getClickedInteraction().isPresent() && context.getClickedInteraction().get().getVehicle() != null && context.getClickedInteraction().get().getVehicle().getType().equals(EntityType.ITEM_DISPLAY)) {
+                    ((ItemDisplay) context.getClickedInteraction().get().getVehicle()).setItemStack(stack);
                     flag.set(true);
                 } else {
                     old_stack = stack;

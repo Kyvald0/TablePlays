@@ -137,8 +137,25 @@ public class Listeners implements Listener {
         }
         // priority - groud - main - off
         // data format = "int:action,int:action,int:action" executed from left to right by priority.
-        // for example for bundle that might be = "134:PICK_UP_ITEM,292:PUT_DOWN"
+        // for example for bundle that might be = "134:PICK_UP,292:PUT_DOWN"
         // that means that if we have action 134(on item + left hand) then we do action PICK_UP, then, if fails, we check for 292(with shift, on block, main hand) and if yes - place down bundle
+
+        //special case: we have bundle in left hand
+        if (BundleManager.isValidBundle(offStack)) {
+            // then handle it first, for example to grab items from the ground:
+            if (offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Actions.getValue(), PersistentDataType.STRING)) {
+                String[] data = (offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Actions.getValue(), PersistentDataType.STRING)).split(","); // ignore null execution on split, can not be(well, it might if Actions tag will be not a string, but who cares
+                for (String currentCheck : data) {
+                    String[] split = currentCheck.split(":");
+                    if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
+                        ArrayList<String> modifiers = Util.getModifiers(offStack, currentTag.toString());
+                        // if we return false, e.g. do not continue -> then do not continue
+                        if (!executeAction(player, currentTag, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
+                    }
+                }
+            }
+        }
+
         if (groundStack != null && groundStack.getItemMeta() != null && groundStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Actions.getValue())) {
             String[] data = (groundStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Actions.getValue(), PersistentDataType.STRING)).split(","); // ignore null execution on split, can not be(well, it might if Actions tag will be not a string, but who cares
             for (String currentCheck : data) {

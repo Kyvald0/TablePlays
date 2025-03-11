@@ -1,5 +1,6 @@
 package org.pythonchik.tableplays;
 
+import org.bukkit.inventory.ItemStack;
 import org.pythonchik.tableplays.managers.RecipeManager;
 import org.pythonchik.tableplays.managers.ValuesManager;
 import org.pythonchik.tableplays.managers.translationManager;
@@ -12,7 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public final class TablePlays extends JavaPlugin implements Listener {
 
@@ -20,6 +23,7 @@ public final class TablePlays extends JavaPlugin implements Listener {
     public static FileConfiguration config = null;
     private static FileConfiguration translations = null;
     public static FileConfiguration data = null;
+    public static HashMap<String, ArrayList<ItemStack>> defaults = new HashMap<>();
     public static boolean isDevAndIsMiniking1000TheBestPlayerInHisMind = true;
     public static Plugin getPlugin() {
         return instance;

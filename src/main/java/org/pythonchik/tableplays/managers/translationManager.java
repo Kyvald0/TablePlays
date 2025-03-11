@@ -28,7 +28,7 @@ public class translationManager {
     public String getName(ItemStack item) {
         String type = item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING);
         try {
-            String sub = "_" + item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER);
+            String sub = ".s" + item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER);
             return ChatColor.translateAlternateColorCodes('&', translations.getString(type + sub + ".name"));
         } catch (Exception ignored) {
             return ChatColor.translateAlternateColorCodes('&', translations.getString(type + ".name", "Автор перевода лох."));
@@ -45,7 +45,7 @@ public class translationManager {
         String type = item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.Item.getValue(), PersistentDataType.STRING);
         List<String> lore;
         try {
-            String sub = "_" + item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER);
+            String sub = ".s" + item.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER);
             lore = translations.getStringList(type + sub + ".lore");
         } catch (Exception ignored) {
             lore = translations.getStringList(type + ".lore");

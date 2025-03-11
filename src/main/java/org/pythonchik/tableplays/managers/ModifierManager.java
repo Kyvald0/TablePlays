@@ -17,6 +17,7 @@ public class ModifierManager {
         MODIFIER_MAP.put(Pattern.compile("CGRID[1-9]\\d*"), new CGridModifier());
         MODIFIER_MAP.put(Pattern.compile("ECGRID[1-9]\\d*"), new ECGridModifier());
         MODIFIER_MAP.put(Pattern.compile("ERT[1-9]\\d*"), new EntityRotateModifier());
+        MODIFIER_MAP.put(Pattern.compile("EFLIP"), new EntityFlipModifier());
         MODIFIER_MAP.put(Pattern.compile("FLIP"), new FlipModifier());
         MODIFIER_MAP.put(Pattern.compile("HIDESUB[1-9]\\d*"), new HideSubModifier());
         MODIFIER_MAP.put(Pattern.compile("PUSH"), new PushModifier());

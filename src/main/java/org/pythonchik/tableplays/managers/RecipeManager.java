@@ -15,12 +15,12 @@ public class RecipeManager {
         board(plugin);
 
         // these 6 need to fill after crafting
-        TablePlays.data.set("default.card36", Util.convertItemsToBase64(CardCreator.get36Deck()));
-        TablePlays.data.set("default.card52", Util.convertItemsToBase64(CardCreator.get52Deck()));
-        TablePlays.data.set("default.card54", Util.convertItemsToBase64(CardCreator.get54Deck()));
-        TablePlays.data.set("default.checker", Util.convertItemsToBase64(ItemCreator.getCheckerDeck()));
-        TablePlays.data.set("default.chess", Util.convertItemsToBase64(ItemCreator.getChessDeck()));
-        TablePlays.data.set("default.domino", Util.convertItemsToBase64(ItemCreator.getDominoDeck()));
+        TablePlays.defaults.put("default.card36", CardCreator.get36Deck());
+        TablePlays.defaults.put("default.card52", CardCreator.get52Deck());
+        TablePlays.defaults.put("default.card54", CardCreator.get54Deck());
+        TablePlays.defaults.put("default.checker", ItemCreator.getCheckerDeck());
+        TablePlays.defaults.put("default.chess", ItemCreator.getChessDeck());
+        TablePlays.defaults.put("default.domino", ItemCreator.getDominoDeck());
         cards36(plugin);
         cards52(plugin);
         cards54(plugin);

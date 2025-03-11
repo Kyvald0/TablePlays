@@ -1,5 +1,6 @@
 package org.pythonchik.tableplays.managers.modifiers;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemDisplay;
@@ -14,15 +15,17 @@ public class PushModifier implements BaseModifier {
     @Override
     public boolean apply(ModifierContext context, String modifier, List<String> allModifiers) {
         AtomicBoolean flag = new AtomicBoolean(false);
-        context.getLocation().ifPresent(spawn_loc -> {
-            context.getItemStack().ifPresent(stack -> {
-                List<Float> hitbox = ValuesManager.getItemHitbox(stack);
+        context.getItemStack().ifPresent(stack -> {
+            List<Float> hitbox = ValuesManager.getItemHitbox(stack);
+            context.getInteraction().ifPresent(interaction -> {
+                if (interaction.getVehicle() == null) return;
+                Location finalLoc = interaction.getVehicle().getLocation().clone();
                 boolean adjusted;
                 int maxIterations = 100; // I doubt you will have 100 items stacked on top of each other and you will click on the bottom one.
                 do {
-                    Collection<Entity> nearbyEntities = spawn_loc.getWorld().getNearbyEntities(spawn_loc, hitbox.get(0), hitbox.get(1), hitbox.get(0));
+                    Collection<Entity> nearbyEntities = finalLoc.getWorld().getNearbyEntities(finalLoc, hitbox.get(0), hitbox.get(1) * 1.5, hitbox.get(0));
                     adjusted = false;
-                    double currentY = spawn_loc.getY();
+                    double currentY = finalLoc.getY();
                     double highestEntityTop = -Double.MAX_VALUE;
 
                     for (Entity entity : nearbyEntities) {
@@ -38,15 +41,20 @@ public class PushModifier implements BaseModifier {
                         }
                     }
                     if (highestEntityTop != -Double.MAX_VALUE) {
-                        spawn_loc.setY(highestEntityTop);
+                        finalLoc.setY(highestEntityTop);
                         adjusted = true;
                     } else {
-                        spawn_loc.setY(currentY + 0.001);
+                        finalLoc.setY(currentY + 0.001);
                         break;
                     }
-                } while (adjusted && maxIterations-- > 0);
-
+                    maxIterations--;
+                } while (adjusted && maxIterations > 0);
+                Entity vehicle = interaction.getVehicle();
+                vehicle.removePassenger(interaction);
+                vehicle.teleport(finalLoc);
+                vehicle.addPassenger(interaction);
                 flag.set(true);
+
             });
         });
         return flag.get();
