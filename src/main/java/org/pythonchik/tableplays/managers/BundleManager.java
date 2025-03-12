@@ -26,7 +26,7 @@ public class BundleManager {
     public static ArrayList<ItemStack> getBundleItems(ItemStack bundle) {
         if (!isValidBundle(bundle)) return new ArrayList<>();
         String data = bundle.getItemMeta().getPersistentDataContainer().get(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING);
-        if (data.startsWith("default.")) return TablePlays.defaults.get(data); // return default decks
+        if (data.matches("default.*")) return (ArrayList<ItemStack>) TablePlays.defaults.get(data).clone(); // return a copy of default pack, so it will not affect next defaults
         if (TablePlays.data.getString(data) != null) return Util.getItemsFromBase64(TablePlays.data.getString(data));
         return Util.getItemsFromBase64(data);
     }

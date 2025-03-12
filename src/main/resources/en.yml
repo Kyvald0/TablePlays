@@ -1,0 +1,208 @@
+dice:
+  name: "&fDice"
+  lore:
+    - "&7A regular dice."
+    - "&7Used for playing dice."
+    - "&7Sometimes can be used as a dice."
+
+card:
+  name: "&fCard"
+  lore:
+    - "&7A playing card."
+    - "&7Made of plastic, not afraid of water"
+
+chip:
+  name: "&fChip"
+  lore:
+    - "&7An unknown chip, for which the translator forgot to put sub-type translation"
+    - "&7May hold some value."
+  s0:
+    name: "&fChip"
+    lore:
+      - "&7A regular playing chip with no value"
+  s1:
+    name: "&2Emerald Chip"
+    lore:
+      - "&7A regular playing chip"
+      - "&7You can extract one &2emerald&7 by placing it in the crafting menu"
+  s2:
+    name: "&eGolden Chip"
+    lore:
+      - "&7A regular playing chip"
+      - "&7You can extract one &egold ingot&7 by placing it in the crafting menu"
+  s3:
+    name: "&cDiamond Chip"
+    lore:
+      - "&7A regular playing chip"
+      - "&7You can extract one &cdiamond&7 by placing it in the crafting menu"
+  s4:
+    name: "&1Deepslate Chip"
+    lore:
+      - "&7A regular playing chip"
+      - "&7You can extract one &1deepslate diamond ore&7 by placing it in the crafting menu"
+  s5:
+    name: "&dBrilliant Chip"
+    lore:
+      - "&7A regular playing chip"
+      - "&7You can extract one &ddiamond block&7 by placing it in the crafting menu"
+  s6:
+    name: "&8Nether Chip"
+    lore:
+      - "&7A regular playing chip"
+      - "&7You can extract one &8netherite ingot&7 by placing it in the crafting menu"
+  s7:
+    name: "&6Netherite Chip"
+    lore:
+      - "&7A regular playing chip"
+      - "&7You can extract one &6netherite block&7 by placing it in the crafting menu"
+
+domino:
+  name: "&fDomino"
+  lore:
+    - "&7A standard domino from a standard set"
+
+board:
+  name: "&fBoard"
+  lore:
+    - "&7A board for playing chess and checkers"
+    - "&7To remove it, click on the lower part of the board"
+
+chess:
+  name: "&fChess Piece"
+  lore:
+    - "&7An unknown chess piece"
+  s1:
+    name: "&fPawn"
+    lore:
+      - "&7Initial squares for a standard game:"
+      - "&7A2-H2"
+  s2:
+    name: "&8Pawn"
+    lore:
+      - "&7Initial squares for a standard game:"
+      - "&7A7-H7"
+  s3:
+    name: "&fRook"
+    lore:
+      - "&7Initial squares for a standard game:"
+      - "&7A1, H1"
+  s4:
+    name: "&8Rook"
+    lore:
+      - "&7Initial squares for a standard game:"
+      - "&7A8, H8"
+  s5:
+    name: "&fKnight"
+    lore:
+      - "&7Initial squares for a standard game:"
+      - "&7B1, G1"
+  s6:
+    name: "&8Knight"
+    lore:
+      - "&7Initial squares for a standard game:"
+      - "&7B8, G8"
+  s7:
+    name: "&fBishop"
+    lore:
+      - "&7Initial squares for a standard game:"
+      - "&7C1, F1"
+  s8:
+    name: "&8Bishop"
+    lore:
+      - "&7Initial squares for a standard game:"
+      - "&7C8, F8"
+  s9:
+    name: "&fKing"
+    lore:
+      - "&7Initial square for a standard game:"
+      - "&7E1"
+  s10:
+    name: "&8King"
+    lore:
+      - "&7Initial square for a standard game:"
+      - "&7E8"
+  s11:
+    name: "&fQueen"
+    lore:
+      - "&7Initial square for a standard game:"
+      - "&7D1"
+  s12:
+    name: "&8Queen"
+    lore:
+      - "&7Initial square for a standard game:"
+      - "&7D8"
+
+checker:
+  name: "&fChecker"
+  lore:
+    - "&7An unknown checker"
+
+bundle:
+  name: "&fBag of items"
+  lore:
+    - "&7There are currently %BNITEMS%/%BMI% items in the bag"
+  s0:
+    name: "&fCard bag"
+    lore:
+      - "&7Stores regular playing cards"
+      - "&7There are currently %BNITEMS%/%BMI% cards in the bag"
+  s1:
+    name: "&fDomino bag"
+    lore:
+      - "&7Stores only dominoes"
+      - "&7There are currently %BNITEMS%/%BMI% dominoes in the bag"
+  s2:
+    name: "&fChess pieces bag"
+    lore:
+      - "&7Stores only chess pieces"
+      - "&7There are currently %BNITEMS%/%BMI% pieces in the bag"
+  s3:
+    name: "&fCheckers bag"
+    lore:
+      - "&7Stores only checkers"
+      - "&7There are currently %BNITEMS%/%BMI% checkers in the bag"
+  s10:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"
+  s11:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips, not only &fwhite"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"
+  s12:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips, not only &2green"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"
+  s13:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips, not only &eyellow"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"
+  s14:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips, not only &cred"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"
+  s15:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips, not only &1blue"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"
+  s16:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips, not only &dpurple"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"
+  s17:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips, not only &8gray"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"
+  s18:
+    name: "&fChip bag"
+    lore:
+      - "&7Stores any chips, not only &6orange"
+      - "&7There are currently %BNITEMS%/%BMI% chips in the bag"

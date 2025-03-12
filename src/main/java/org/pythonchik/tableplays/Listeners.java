@@ -150,7 +150,7 @@ public class Listeners implements Listener {
                     if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                         ArrayList<String> modifiers = Util.getModifiers(offStack, currentTag.toString());
                         // if we return false, e.g. do not continue -> then do not continue
-                        if (!executeAction(player, currentTag, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
+                        if (!executeAction(player, currentTag, split[1], Callers.Left.getValue(), modifiers, mainStack, offStack, interaction, clicked_position)) return;
                     }
                 }
             }
@@ -163,7 +163,7 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(groundStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, currentTag, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
+                    if (!executeAction(player, currentTag, split[1], Callers.Ground.getValue(), modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
@@ -175,7 +175,7 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(mainStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, currentTag, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
+                    if (!executeAction(player, currentTag, split[1], Callers.Main.getValue(),  modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
@@ -186,14 +186,14 @@ public class Listeners implements Listener {
                 if (split.length > 1 && split[0].equals(currentTag.toString())) { // split is in the correct format, and we are doing the correct action
                     ArrayList<String> modifiers = Util.getModifiers(offStack, currentTag.toString());
                     // if we return false, e.g. do not continue -> then do not continue
-                    if (!executeAction(player, currentTag, split[1], modifiers, mainStack, offStack, interaction, clicked_position)) return;
+                    if (!executeAction(player, currentTag, split[1], Callers.Left.getValue(), modifiers, mainStack, offStack, interaction, clicked_position)) return;
                 }
             }
         }
     }
     //make a lot of functions to handle actions with card, maybe transport here also some params, maybe in hashmap format, but how to get the obj?
 
-    public static boolean executeAction(Player player, ActionTagSet all, String action, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Vector clicked_position) {
+    public static boolean executeAction(Player player, ActionTagSet all, String action, String caller, ArrayList<String> modifiers, ItemStack mainStack, ItemStack offStack, Interaction interaction, Vector clicked_position) {
         //returns True if you need to continue the execution, and false it the action if final.
         switch (action.toUpperCase()) {
             //does nothing by itself, but applies modifiers to everything it can
@@ -212,6 +212,7 @@ public class Listeners implements Listener {
             }
             //place X down, main hand
             case "PLACE_MAIN" -> {
+                if (!caller.equals(Callers.Main.getValue())) return true;
                 Location toPlace = Util.getBlockEyeLoc(player);
 
                 ModifierContext context = new ModifierContext(action, player, null, null, toPlace, clicked_position);
@@ -255,6 +256,7 @@ public class Listeners implements Listener {
             }
             //place X down, left hand
             case "PLACE_LEFT" -> {
+                if (!caller.equals(Callers.Left.getValue())) return true;
                 Location toPlace = Util.getBlockEyeLoc(player);
                 //modify the location of spawn if needed
                 ModifierContext context = new ModifierContext(action, player, null, null, toPlace, clicked_position);
@@ -300,6 +302,7 @@ public class Listeners implements Listener {
             }
             // place X on top of an item, main hand
             case "PLACE_TOP_MAIN" -> {
+                if (!caller.equals(Callers.Main.getValue())) return true;
                 if (clicked_position == null || interaction == null) {
                     return true;
                 }
@@ -350,6 +353,7 @@ public class Listeners implements Listener {
             }
             // place X on top of an item, left hand
             case "PLACE_TOP_LEFT" -> {
+                if (!caller.equals(Callers.Left.getValue())) return true;
                 if (clicked_position == null || interaction == null) {
                     return true;
                 }
@@ -400,6 +404,7 @@ public class Listeners implements Listener {
             }
             // suck to bundle in off hand from the main hand
             case "PUT_FROM_MAIN" -> {
+                if (!caller.equals(Callers.Left.getValue())) return true;
                 //assumption is - used in bundle to requested to put the item in bundle, the bundle is always in off hand, and the item is in main hand
                 if (offStack == null || offStack.getItemMeta() == null || !offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()) || !offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Item.getValue(), PersistentDataType.STRING).equals(ItemTypes.Bundle.getValue()))  {
                     return true;
@@ -429,8 +434,9 @@ public class Listeners implements Listener {
             }
             // suck to bundle in the off hand from the ground
             case "PUT_FROM_GROUND" -> {
+                if (!caller.equals(Callers.Left.getValue())) return true;
                 //assumption is - used in bundle to requested to put the item in bundle, the bundle is always in off hand, and the item is in the ground
-                if (offStack == null || offStack.getItemMeta() == null || !offStack.getItemMeta().getPersistentDataContainer().has(ItemTags.Item.getValue()) || offStack.getItemMeta().getPersistentDataContainer().get(ItemTags.Item.getValue(), PersistentDataType.STRING).equals(ItemTypes.Bundle.getValue()))  {
+                if (offStack == null || offStack.getItemMeta() == null || !offStack.getItemMeta().getPersistentDataContainer().getOrDefault(ItemTags.Item.getValue(), PersistentDataType.STRING, "not a bundle tag. If you make this a bundle tag, you are a fucking piece of shit.").equals(ItemTypes.Bundle.getValue()))  {
                     return true;
                 }
                 if (interaction == null) {
@@ -469,6 +475,7 @@ public class Listeners implements Listener {
             }
             // get from the bundle in main
             case "GET_FROM_BUNDLE_MAIN" -> {
+                if (!caller.equals(Callers.Main.getValue())) return true;
                 if (!BundleManager.isValidBundle(mainStack)) {
                     return true;
                 }
@@ -503,6 +510,7 @@ public class Listeners implements Listener {
             }
             // get from the bundle in main
             case "GET_FROM_BUNDLE_LEFT" -> {
+                if (!caller.equals(Callers.Left.getValue())) return true;
                 if (!BundleManager.isValidBundle(offStack)) {
                     return true;
                 }
@@ -533,6 +541,7 @@ public class Listeners implements Listener {
             }
             // pick up from the ground
             case "PICK_UP" -> {
+                if (!caller.equals(Callers.Ground.getValue())) return true;
                 if (interaction == null || interaction.getVehicle() == null) return true;
                 ItemDisplay display = (ItemDisplay) interaction.getVehicle();
                 ItemStack groundStack = display.getItemStack();

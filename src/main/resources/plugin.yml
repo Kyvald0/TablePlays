@@ -5,5 +5,5 @@ api-version: '1.21'
 commands:
   gimme:
     permission: op
-  base64:
+  treload:
     permission: op

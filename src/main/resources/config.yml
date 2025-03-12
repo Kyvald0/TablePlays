@@ -1,6 +1,6 @@
-# available languages: 'ru', 'en', 'what'.
+# available languages: 'ru', 'en'.
 # or you can just type any string and create file `{x}.yml` where {x} is whatever you typed in here
-lang: ru
+lang: en
 
 # if true some items and/or big tags will be saved in the `saved.yml` file
 # this is not yet working, I hope I will do this feature and change this text, or otherwise you may try to use it, but it may do nothing
@@ -185,7 +185,7 @@ items:
       - 0
       - 1
     basecmd: 33200
-    max_stack: 15
+    max_stack: 12
   chess:
     pitch: 0
     hitbox:

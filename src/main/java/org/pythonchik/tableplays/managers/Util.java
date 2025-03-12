@@ -138,6 +138,19 @@ public class Util {
         }
     }
 
+    public enum Callers {
+        Ground("ground"),
+        Main("main"),
+        Left("left");
+        private String value;
+        Callers(String value) {
+            this.value = value;
+        }
+        public String getValue() {
+            return value;
+        }
+    }
+
     public static ArrayList<ItemStack> getItemsFromBase64(String baseString) {
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(baseString));
