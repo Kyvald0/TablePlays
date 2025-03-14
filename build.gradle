@@ -1,8 +1,9 @@
 plugins {
     id 'java'
+    //id 'io.github.goooler.shadow' version '8.1.8'
 }
 
-group = 'org.pythonchik'
+group = 'me.pythonchik'
 version = '2.71828'
 
 repositories {
@@ -19,7 +20,13 @@ repositories {
 
 dependencies {
     compileOnly "org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT"
+    //implementation 'com.esotericsoftware:kryo:5.6.2'
 }
+
+//shadowJar {
+//    relocate 'com.esotericsoftware.kryo', 'me.pythonchik.tableplays.shaded.kryo'
+//}
+
 
 def targetJavaVersion = 21
 java {

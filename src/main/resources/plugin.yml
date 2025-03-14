@@ -1,6 +1,6 @@
 name: TablePlays
 version: '${version}'
-main: org.pythonchik.tableplays.TablePlays
+main: me.pythonchik.tableplays.TablePlays
 api-version: '1.21'
 commands:
   gimme:

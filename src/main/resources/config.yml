@@ -207,4 +207,4 @@ items:
       - 0
       - 1
     basecmd: 33210
-
+    max_stack: 8
