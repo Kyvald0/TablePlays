@@ -12,6 +12,8 @@ allow_files: true
 file_threshold: 36
 
 # the max amount of chips in a single bundle
+# Do not recommend to set it super high, bigger the numbers - easier it is for someone to produce a LOT of lag
+# even at 64 it is noticeable, but not that effective
 chip_bundle_size: 64
 
 

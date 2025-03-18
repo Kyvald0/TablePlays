@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'me.pythonchik'
-version = '2.71828'
+version = '3.14' // 3.14 - base version, then one extra digit - new update
 
 repositories {
     mavenCentral()

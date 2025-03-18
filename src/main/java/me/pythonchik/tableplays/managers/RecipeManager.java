@@ -53,7 +53,7 @@ public class RecipeManager {
     }
 
     private static void cards36(Plugin plugin){
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards56bundle"), ItemCreator.get36bundle());
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards36bundle"), ItemCreator.get36bundle());
         recipe.shape(
                 "PPP",
                 "BSR",
@@ -71,8 +71,8 @@ public class RecipeManager {
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin,"cards52bundle"), ItemCreator.get52bundle());
         recipe.shape(
                 "PPP",
-                "RSB",
-                "RLB"
+                " S ",
+                "BLR"
         );
         recipe.setIngredient('P', Material.PAPER);
         recipe.setIngredient('R',Material.RED_DYE);
