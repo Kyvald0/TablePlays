@@ -2,7 +2,7 @@
 	"credit": "by 2m3v",
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "m3vtg:item/poker_chip_y"
+		"layer0": "m3vtg:item/poker/poker_chip_yellow"
 	},
 	"gui_light": "front",
 	"display": {

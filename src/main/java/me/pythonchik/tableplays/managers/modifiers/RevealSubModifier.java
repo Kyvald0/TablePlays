@@ -2,7 +2,6 @@ package me.pythonchik.tableplays.managers.modifiers;
 
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemDisplay;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import me.pythonchik.tableplays.managers.Util;
@@ -17,8 +16,8 @@ public class RevealSubModifier implements BaseModifier {
     public boolean apply(ModifierContext context, String modifier, List<String> allModifiers) {
         // REVSUB
         AtomicBoolean flag = new AtomicBoolean(false);
-        context.getItemStack().ifPresent(old_stack -> {
-            ItemStack stack = old_stack.clone();
+        context.getItemStack().ifPresent(stack -> {
+            //ItemStack stack = old_stack.clone();
             if (stack.getItemMeta() != null && stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.ExtraData.getValue(), PersistentDataType.STRING)) {
 
                 ItemMeta meta = stack.getItemMeta();
@@ -37,12 +36,12 @@ public class RevealSubModifier implements BaseModifier {
                 stack.setItemMeta(meta);
                 meta.setCustomModelData(ValuesManager.getBaseCMD(stack));
                 stack.setItemMeta(meta);
-                if (context.getClickedInteraction().isPresent() && context.getClickedInteraction().get().getVehicle() != null && context.getClickedInteraction().get().getVehicle().getType().equals(EntityType.ITEM_DISPLAY)) {
+                String issuer = context.getIssuer();
+                if (issuer.equals(Util.Callers.Ground.getValue()) && context.getClickedInteraction().isPresent() && context.getClickedInteraction().get().getVehicle() != null && context.getClickedInteraction().get().getVehicle().getType().equals(EntityType.ITEM_DISPLAY)) {
                     ((ItemDisplay) context.getClickedInteraction().get().getVehicle()).setItemStack(stack);
-                    flag.set(true);
-                } else {
-                    old_stack = stack;
                 }
+                flag.set(true);
+                //if (context.getClickedInteraction().isPresent() && context.getClickedInteraction().get().getVehicle() != null && context.getClickedInteraction().get().getVehicle().getType().equals(EntityType.ITEM_DISPLAY)) {
             }
         });
         return flag.get();

@@ -14,7 +14,6 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.util.Vector;
-import me.pythonchik.tableplays.managers.*;
 import me.pythonchik.tableplays.managers.Util.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.event.EventHandler;
@@ -203,13 +202,13 @@ public class Listeners implements Listener {
             //does nothing by itself, but applies modifiers to everything it can
             case "NOTHING" -> {
                 if (mainStack != null) {
-                    ModifierContext context = new ModifierContext(action, player, mainStack, null, null, clicked_position, interaction);
+                    ModifierContext context = new ModifierContext(action, player, mainStack, null, null, clicked_position, Callers.Main.getValue(), interaction);
                     ModifierManager.applyModifiers(context, modifiers);
                 } else if (offStack != null) {
-                    ModifierContext context = new ModifierContext(action, player, offStack, null, null, clicked_position, interaction);
+                    ModifierContext context = new ModifierContext(action, player, offStack, null, null, clicked_position, Callers.Left.getValue(), interaction);
                     ModifierManager.applyModifiers(context, modifiers);
                 } else {
-                    ModifierContext context = new ModifierContext(action, player, ((ItemDisplay) interaction.getVehicle()).getItemStack(), null, null, clicked_position, interaction);
+                    ModifierContext context = new ModifierContext(action, player, ((ItemDisplay) interaction.getVehicle()).getItemStack(), null, null, clicked_position, Callers.Ground.getValue(), interaction);
                     ModifierManager.applyModifiers(context, modifiers);
                 }
                 return true;
@@ -219,7 +218,7 @@ public class Listeners implements Listener {
                 if (!caller.equals(Callers.Main.getValue())) return true;
                 Location toPlace = Util.getBlockEyeLoc(player);
 
-                ModifierContext context = new ModifierContext(action, player, null, null, toPlace, clicked_position);
+                ModifierContext context = new ModifierContext(action, player, null, null, toPlace, clicked_position, Callers.Main.getValue());
                 ModifierManager.applyModifiers(context, modifiers);
 
                 Interaction spawned_interaction = player.getWorld().spawn(toPlace, Interaction.class);
@@ -234,7 +233,7 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = mainStack.clone();
 
-                context = new ModifierContext(action, player, single_item, spawned_interaction, toPlace, clicked_position);
+                context = new ModifierContext(action, player, single_item, spawned_interaction, toPlace, clicked_position, Callers.Main.getValue());
                 ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
@@ -254,7 +253,7 @@ public class Listeners implements Listener {
 
                 display.addPassenger(spawned_interaction);
 
-                context = new ModifierContext(action, player, single_item, spawned_interaction, toPlace, clicked_position);
+                context = new ModifierContext(action, player, single_item, spawned_interaction, toPlace, clicked_position, Callers.Main.getValue());
                 ModifierManager.applyModifiers(context, modifiers);
                 return false;
             }
@@ -263,7 +262,7 @@ public class Listeners implements Listener {
                 if (!caller.equals(Callers.Left.getValue())) return true;
                 Location toPlace = Util.getBlockEyeLoc(player);
                 //modify the location of spawn if needed
-                ModifierContext context = new ModifierContext(action, player, null, null, toPlace, clicked_position);
+                ModifierContext context = new ModifierContext(action, player, null, null, toPlace, clicked_position, Callers.Left.getValue());
                 ModifierManager.applyModifiers(context, modifiers);
 
                 Interaction spawned_interaction = player.getWorld().spawn(toPlace, Interaction.class);
@@ -279,7 +278,7 @@ public class Listeners implements Listener {
                 ItemStack single_item = offStack.clone();
 
                 //modify item if needed
-                context = new ModifierContext(action, player, single_item, spawned_interaction, null, null);
+                context = new ModifierContext(action, player, single_item, spawned_interaction, toPlace, clicked_position, Callers.Left.getValue());
                 ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
@@ -299,7 +298,7 @@ public class Listeners implements Listener {
 
                 display.addPassenger(spawned_interaction);
                 //final apply if not already
-                context = new ModifierContext(action, player, single_item, spawned_interaction, toPlace, clicked_position);
+                context = new ModifierContext(action, player, single_item, spawned_interaction, toPlace, clicked_position, Callers.Left.getValue());
                 ModifierManager.applyModifiers(context, modifiers);
 
                 return false;
@@ -315,7 +314,7 @@ public class Listeners implements Listener {
                 spawn_loc.setYaw(player.getLocation().getYaw());
                 spawn_loc.add(clicked_position);
 
-                ModifierContext context = new ModifierContext(action, player, null, null, spawn_loc, clicked_position, interaction);
+                ModifierContext context = new ModifierContext(action, player, null, null, spawn_loc, clicked_position, Callers.Main.getValue(), interaction);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 Interaction spawned_interaction = player.getWorld().spawn(spawn_loc, Interaction.class);
@@ -330,7 +329,7 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = mainStack.clone();
 
-                context = new ModifierContext(action, player, single_item, spawned_interaction, spawn_loc, clicked_position, interaction);
+                context = new ModifierContext(action, player, single_item, spawned_interaction, spawn_loc, clicked_position, Callers.Main.getValue(), interaction);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
@@ -350,7 +349,7 @@ public class Listeners implements Listener {
 
                 display.addPassenger(spawned_interaction);
                 //final-check to apply everything if needed
-                context = new ModifierContext(action, player, single_item, spawned_interaction, spawn_loc, clicked_position, interaction);
+                context = new ModifierContext(action, player, single_item, spawned_interaction, spawn_loc, clicked_position, Callers.Main.getValue(), interaction);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 return false;
@@ -366,7 +365,7 @@ public class Listeners implements Listener {
                 spawn_loc.setYaw(player.getLocation().getYaw());
                 spawn_loc.add(clicked_position);
 
-                ModifierContext context = new ModifierContext(action, player, null, null, spawn_loc, clicked_position, interaction);
+                ModifierContext context = new ModifierContext(action, player, null, null, spawn_loc, clicked_position, Callers.Left.getValue(), interaction);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 Interaction spawned_interaction = player.getWorld().spawn(spawn_loc, Interaction.class);
@@ -381,7 +380,7 @@ public class Listeners implements Listener {
                 //item handling
                 ItemStack single_item = offStack.clone();
 
-                context = new ModifierContext(action, player, single_item, spawned_interaction, spawn_loc, clicked_position, interaction);
+                context = new ModifierContext(action, player, single_item, spawned_interaction, spawn_loc, clicked_position, Callers.Left.getValue(), interaction);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 single_item.setAmount(1);
@@ -401,7 +400,7 @@ public class Listeners implements Listener {
 
                 display.addPassenger(spawned_interaction);
 
-                context = new ModifierContext(action, player, single_item, spawned_interaction, spawn_loc, clicked_position, interaction);
+                context = new ModifierContext(action, player, single_item, spawned_interaction, spawn_loc, clicked_position, Callers.Left.getValue(), interaction);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 return false;
@@ -419,10 +418,10 @@ public class Listeners implements Listener {
                 ItemStack single_item = mainStack.clone();
                 single_item.setAmount(1);
 
-                ModifierContext context = new ModifierContext(action, player, single_item, null, null, clicked_position);
+                ModifierContext context = new ModifierContext(action, player, single_item, null, null, clicked_position, Callers.Left.getValue());
                 ModifierManager.applyModifiers(context, modifiers);
 
-                ModifierContext context2 = new ModifierContext(action, player, single_item, null, null, clicked_position);
+                ModifierContext context2 = new ModifierContext(action, player, single_item, null, null, clicked_position, Callers.Left.getValue());
                 ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
                 tagSet.add(ActionTag.TO_BUNDLE);
                 tagSet.add(ActionTag.BOTH_HAND);
@@ -453,10 +452,10 @@ public class Listeners implements Listener {
                 ItemStack single_item = groundStack.clone();
                 single_item.setAmount(1);
 
-                ModifierContext context = new ModifierContext(action, player, single_item, null, null, clicked_position, interaction);
+                ModifierContext context = new ModifierContext(action, player, single_item, null, null, clicked_position, Callers.Left.getValue(), interaction);
                 ModifierManager.applyModifiers(context, modifiers);
 
-                ModifierContext context2 = new ModifierContext(action, player, single_item, null, null, clicked_position, interaction);
+                ModifierContext context2 = new ModifierContext(action, player, single_item, null, null, clicked_position, Callers.Left.getValue(), interaction);
                 ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
                 tagSet.add(ActionTag.TO_BUNDLE);
                 tagSet.add(ActionTag.ON_ITEM);
@@ -498,7 +497,7 @@ public class Listeners implements Listener {
                     index = 0;
                     toAdd = items.getFirst();
                 }
-                ModifierContext context = new ModifierContext(action, player, toAdd, null, null, clicked_position);
+                ModifierContext context = new ModifierContext(action, player, toAdd, null, null, clicked_position, Callers.Main.getValue());
                 ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
                 tagSet.add(ActionTag.FROM_BUNDLE);
                 ModifierManager.applyModifiers(context, Util.getModifiers(toAdd, tagSet.toString()));
@@ -533,6 +532,10 @@ public class Listeners implements Listener {
                     index = 0;
                     toAdd = items.getFirst();
                 }
+                ModifierContext context = new ModifierContext(action, player, toAdd, null, null, clicked_position, Callers.Left.getValue());
+                ActionTagSet tagSet = new ActionTagSet(all.contains(ActionTag.WITH_SHIFT) ? ActionTag.WITH_SHIFT.getValue() : 0);
+                tagSet.add(ActionTag.FROM_BUNDLE);
+                ModifierManager.applyModifiers(context, Util.getModifiers(toAdd, tagSet.toString()));
                 items.remove(index);
                 BundleManager.saveItemsToBundle(offStack, items);
                 HashMap<Integer, ItemStack> left = player.getInventory().addItem(toAdd);
@@ -553,7 +556,7 @@ public class Listeners implements Listener {
                 if (modifiers.contains("PROTECT") && clicked_position.getY()*5 > interaction.getInteractionHeight()) {
                     return true;
                 }
-                ModifierContext context = new ModifierContext(action, player, groundStack, null, null, clicked_position, interaction);
+                ModifierContext context = new ModifierContext(action, player, groundStack, null, null, clicked_position, Callers.Ground.getValue(), interaction);
                 ModifierManager.applyModifiers(context, modifiers);
 
                 HashMap<Integer, ItemStack> left = player.getInventory().addItem(groundStack);
