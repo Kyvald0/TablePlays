@@ -265,7 +265,7 @@ public class Util {
         ArrayList<String> modifiers = new ArrayList<>();
         for (String modif : modifs) {
             String[] split_mod = modif.split(":");
-            if (split_mod.length >= 2 && split_mod[0].equals(action)){
+            if (split_mod.length >= 2 && (split_mod[0].equals(action) || split_mod[0].equals("*"))){
                 modifiers.add(split_mod[1]);
             }
         }

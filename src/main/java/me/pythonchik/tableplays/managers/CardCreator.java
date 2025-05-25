@@ -148,7 +148,7 @@ public class CardCreator {
         if (meta != null) {
             meta.getPersistentDataContainer().set(Util.ItemTags.Item.getValue(), PersistentDataType.STRING, type);
             meta.getPersistentDataContainer().set(Util.ItemTags.Actions.getValue(), PersistentDataType.STRING, "65:PICK_UP,193:NOTHING,18:PLACE_MAIN,146:PLACE_MAIN,66:PLACE_TOP_MAIN,194:NOTHING,194:PLACE_TOP_MAIN,20:PLACE_LEFT,148:PLACE_LEFT,68:PLACE_TOP_LEFT,196:PLACE_TOP_LEFT");
-            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "384:HIDESUB80,520:REVSUB,648:REVSUB,193:REVSUB,193:EFLIP,146:FLIP,66:REVSUB,194:FLIP,20:REVSUB,148:FLIP,68:REVSUB,196:FLIP,18:REVSUB,65:REVSUB");
+            meta.getPersistentDataContainer().set(Util.ItemTags.Modifiers.getValue(), PersistentDataType.STRING, "384:HIDESUB80,520:REVSUB,648:REVSUB,193:REVSUB,193:EFLIP,146:FLIP,66:REVSUB,194:FLIP,20:REVSUB,148:FLIP,68:REVSUB,196:FLIP,18:REVSUB,65:REVSUB,576:REVSUB,704:REVSUB");
             meta.getPersistentDataContainer().set(Util.ItemTags.SubType.getValue(), PersistentDataType.INTEGER, subType);
             //set 1, to use tags later.
             card.setItemMeta(meta);
