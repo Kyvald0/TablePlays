@@ -1,5 +1,6 @@
 package me.pythonchik.tableplays.managers;
 
+import me.pythonchik.tableplays.TablePlays;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -119,9 +120,11 @@ public class ItemCreator {
             String saveType = ValuesManager.getSaveType(size);
             meta.getPersistentDataContainer().set(Util.ItemTags.BundleMeta.getValue(), PersistentDataType.STRING, saveType + ";" + size + ";random");
             if (saveType.equals("data")) {
-                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, ""); // generate new bundle
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, "");
             } else {
-                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, UUID.randomUUID().toString()); // generate new bundle
+                String uuid = UUID.randomUUID().toString();
+                meta.getPersistentDataContainer().set(Util.ItemTags.BundleData.getValue(), PersistentDataType.STRING, uuid);
+                TablePlays.data.set(uuid, "");
             }
             bundle.setItemMeta(meta);
 

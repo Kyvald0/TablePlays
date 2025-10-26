@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public final class TablePlays extends JavaPlugin implements Listener {
 
@@ -52,9 +53,9 @@ public final class TablePlays extends JavaPlugin implements Listener {
         registerDefaults();
         RecipeManager.init(this);
         //always register commands to reload plugin and give all items (to rest those reloads)
-        getCommand("gimme").setExecutor(new commands());
-        getCommand("gimme").setTabCompleter(new commands());
-        getCommand("treload").setExecutor(new commands());
+        Objects.requireNonNull(getCommand("gimme")).setExecutor(new commands());
+        Objects.requireNonNull(getCommand("gimme")).setTabCompleter(new commands());
+        Objects.requireNonNull(getCommand("treload")).setExecutor(new commands());
     }
 
     @Override
@@ -91,10 +92,10 @@ public final class TablePlays extends JavaPlugin implements Listener {
         config = YamlConfiguration.loadConfiguration(configFile);
         if (config.getBoolean("allow_files")) {
             File savingFile = new File(getDataFolder(), "saved.yml");
-            if (!configFile.exists()) {
+            if (!savingFile.exists()) {
                 saveResource("saved.yml", false);
             }
-            data = YamlConfiguration.loadConfiguration(configFile);
+            data = YamlConfiguration.loadConfiguration(savingFile);
         }
 
         String lang = config.getString("lang", "en");  // default to "ru" if not set
@@ -115,5 +116,4 @@ public final class TablePlays extends JavaPlugin implements Listener {
         }
         translations = YamlConfiguration.loadConfiguration(langFile);
     }
-
 }

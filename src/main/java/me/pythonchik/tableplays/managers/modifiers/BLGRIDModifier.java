@@ -12,17 +12,15 @@ public class BLGRIDModifier implements BaseModifier {
         //modifier looks like this: BLGRID1
         // its the same as CGRID, but not Center Grid, rather BottomLeft Grid (Dont know if its always bottom left, but hey!)
         AtomicBoolean flag = new AtomicBoolean(false);
-        context.getLocation().ifPresent(spawn_loc -> {
-            context.getVector().ifPresent(clicked_pos -> {
-                int divisions = Integer.parseInt(modifier.substring(6));
-                if (divisions <= 0) return;
-                Location blockLocation = spawn_loc.getBlock().getLocation();
-                double regionSize = 1.0 / divisions;
-                spawn_loc.setX(blockLocation.getX() + regionSize * ((int) (clicked_pos.getX() / regionSize)));
-                spawn_loc.setZ(blockLocation.getZ() + regionSize * ((int) (clicked_pos.getZ() / regionSize)));
-                flag.set(true);
-            });
-        });
+        context.getLocation().ifPresent(spawn_loc -> context.getVector().ifPresent(clicked_pos -> {
+            int divisions = Integer.parseInt(modifier.substring(6));
+            if (divisions <= 0) return;
+            Location blockLocation = spawn_loc.getBlock().getLocation();
+            double regionSize = 1.0 / divisions;
+            spawn_loc.setX(blockLocation.getX() + regionSize * ((int) (clicked_pos.getX() / regionSize)));
+            spawn_loc.setZ(blockLocation.getZ() + regionSize * ((int) (clicked_pos.getZ() / regionSize)));
+            flag.set(true);
+        }));
         return flag.get();
     }
 }

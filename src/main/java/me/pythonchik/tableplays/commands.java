@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +14,9 @@ import java.util.List;
 public class commands implements CommandExecutor, TabCompleter {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
+        if (sender instanceof Player player) {
             if (command.getName().equals("gimme")) {
-                Player player = (Player) sender;
                 if (args.length == 0) {
                     player.getInventory().addItem(ItemCreator.getDice());
                     player.getInventory().addItem(ItemCreator.getBoard());
@@ -93,7 +93,7 @@ public class commands implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, Command command, @NotNull String label, String @NotNull [] args) {
         if (command.getName().equals("gimme")) {
             if (args.length == 1) {
                 List<String> completions = new ArrayList<>();

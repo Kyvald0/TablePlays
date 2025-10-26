@@ -10,16 +10,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
-import org.bukkit.util.io.BukkitObjectInputStream;
-import org.bukkit.util.io.BukkitObjectOutputStream;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Util {
+
+    private static final Logger logger = Logger.getLogger(Util.class.getName());
 
     public enum ActionTag {
         NONE_HAND(1),
@@ -136,7 +138,7 @@ public class Util {
         Checker("checker"),
         Chess("chess"),
         Domino("domino");
-        private String value;
+        private final String value;
         ItemTypes(String value) {
             this.value = value;
         }
@@ -149,7 +151,7 @@ public class Util {
         Ground("ground"),
         Main("main"),
         Left("left");
-        private String value;
+        private final String value;
         Callers(String value) {
             this.value = value;
         }
@@ -160,41 +162,33 @@ public class Util {
 
     public static Integer getItemStackCountFromString(String baseString) {
         try {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(baseString));
-            BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
-            int size = dataInput.readInt();
-            dataInput.close();
-            return size;
-        } catch (Exception ignored) {}
+            byte[] bytes = Base64.getUrlDecoder().decode(baseString);
+            ItemStack[] items = ItemStack.deserializeItemsFromBytes(bytes);
+            return items.length;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to get item count from base64 string", e);
+        }
         return 0;
     }
 
     public static ArrayList<ItemStack> getItemsFromBase64(String baseString) {
         try {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(baseString));
-            BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
-            int size = dataInput.readInt();
-            ArrayList<ItemStack> returning_stacks = new ArrayList<>();
-            for (int i = 0; i < size;i++){
-                returning_stacks.add((ItemStack) dataInput.readObject());
-            }
-            dataInput.close();
-            return returning_stacks;
-        } catch (Exception ignored) {}
+            byte[] bytes = Base64.getUrlDecoder().decode(baseString);
+            ItemStack[] items = ItemStack.deserializeItemsFromBytes(bytes);
+            return new ArrayList<>(Arrays.asList(items));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to deserialize items from base64 string", e);
+        }
         return new ArrayList<>();
     }
 
     public static String convertItemsToBase64(ArrayList<ItemStack> itemStacks) {
         try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
-            dataOutput.writeInt(itemStacks.size());
-            for (ItemStack stack : itemStacks) {
-                dataOutput.writeObject(stack);
-            }
-            dataOutput.close();
-            return Base64Coder.encodeLines(outputStream.toByteArray());
-        } catch (Exception ignored) {}
+            byte[] bytes = ItemStack.serializeItemsAsBytes(itemStacks);
+            return Base64.getUrlEncoder().encodeToString(bytes);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to serialize items to base64", e);
+        }
         return "Errore";
     }
 
@@ -252,7 +246,7 @@ public class Util {
     public static Location getBlockEyeLoc(Player player) {
         Vector direction = player.getEyeLocation().getDirection();
         Location eyeloc = player.getEyeLocation();
-        for (double i = 0; i < player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).getBaseValue(); i += 0.002) {
+        for (double i = 0; i < Objects.requireNonNull(player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)).getBaseValue(); i += 0.002) {
             eyeloc.add(direction.clone().multiply(0.002));
             if (eyeloc.getBlock().getType() != Material.AIR) {break;}
         }
@@ -273,7 +267,7 @@ public class Util {
     }
 
     public static Vector getClickedPosition(Player player) {
-        RayTraceResult result = player.getWorld().rayTraceBlocks(player.getEyeLocation(), player.getEyeLocation().getDirection(), (int) player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).getBaseValue());
+        RayTraceResult result = player.getWorld().rayTraceBlocks(player.getEyeLocation(), player.getEyeLocation().getDirection(), (int) Objects.requireNonNull(player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)).getBaseValue());
 
         if (result == null || result.getHitBlock() == null) {
             return null; // No block hit

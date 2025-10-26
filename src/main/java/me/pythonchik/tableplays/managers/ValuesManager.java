@@ -111,6 +111,7 @@ public class ValuesManager {
         HashMap<Material, Integer> map = new HashMap<>();
         if (TablePlays.config.contains("items") && TablePlays.config.contains("items." + type) && TablePlays.config.contains("items." + type + ".variants")) {
             ConfigurationSection config = TablePlays.config.getConfigurationSection("items." + type + ".variants");
+            assert config != null;
             for (String key : config.getKeys(false)) {
                 if (Material.getMaterial(key) != null) map.put(Material.getMaterial(key), config.getInt(key));
                 else System.out.println("Error while trying to get material for: " + key);

@@ -8,6 +8,7 @@ import me.pythonchik.tableplays.managers.Util;
 import me.pythonchik.tableplays.managers.ValuesManager;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RevealSubModifier implements BaseModifier {
@@ -21,7 +22,7 @@ public class RevealSubModifier implements BaseModifier {
             if (stack.getItemMeta() != null && stack.getItemMeta().getPersistentDataContainer().has(Util.ItemTags.ExtraData.getValue(), PersistentDataType.STRING)) {
 
                 ItemMeta meta = stack.getItemMeta();
-                String[] extras = meta.getPersistentDataContainer().get(Util.ItemTags.ExtraData.getValue(), PersistentDataType.STRING).split(";");
+                String[] extras = Objects.requireNonNull(meta.getPersistentDataContainer().get(Util.ItemTags.ExtraData.getValue(), PersistentDataType.STRING)).split(";");
 
                 for (String extra : extras) {
                     String[] split = extra.split(":");
@@ -37,8 +38,8 @@ public class RevealSubModifier implements BaseModifier {
                 meta.setCustomModelData(ValuesManager.getBaseCMD(stack));
                 stack.setItemMeta(meta);
                 String issuer = context.getIssuer();
-                if (issuer.equals(Util.Callers.Ground.getValue()) && context.getClickedInteraction().isPresent() && context.getClickedInteraction().get().getVehicle() != null && context.getClickedInteraction().get().getVehicle().getType().equals(EntityType.ITEM_DISPLAY)) {
-                    ((ItemDisplay) context.getClickedInteraction().get().getVehicle()).setItemStack(stack);
+                if (issuer.equals(Util.Callers.Ground.getValue()) && context.getClickedInteraction().isPresent() && context.getClickedInteraction().get().getVehicle() != null && Objects.requireNonNull(context.getClickedInteraction().get().getVehicle()).getType().equals(EntityType.ITEM_DISPLAY)) {
+                    ((ItemDisplay) Objects.requireNonNull(context.getClickedInteraction().get().getVehicle())).setItemStack(stack);
                 }
                 flag.set(true);
                 //if (context.getClickedInteraction().isPresent() && context.getClickedInteraction().get().getVehicle() != null && context.getClickedInteraction().get().getVehicle().getType().equals(EntityType.ITEM_DISPLAY)) {
